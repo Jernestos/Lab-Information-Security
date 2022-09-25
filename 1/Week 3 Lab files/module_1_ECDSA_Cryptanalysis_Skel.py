@@ -8,15 +8,25 @@ from fpylll import SVP
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
-
+#copy paste egcd and mod_inv form module_1_ECC_ECDSA, prewritten code
+# Euclidean algorithm for gcd computation
+# Output: gcd g, Bezout's coefficient s, t such that g = s * a + t * b
 def egcd(a, b):
-    # Implement the Euclidean algorithm for gcd computation
-    raise NotImplementedError()
+    if a == 0:
+        return b, 0, 1
+    else:
+        g, y, x = egcd(b % a, a)
+        return g, x - (b // a) * y, y
 
+# Modular inversion computation
 def mod_inv(a, p):
-    # Implement a function to compute the inverse of a modulo p
-    # Hint: Use the gcd algorithm implemented above
-    raise NotImplementedError()
+    if a < 0:
+        return p - mod_inv(-a, p)
+    g, x, y = egcd(a, p)
+    if g != 1:
+        raise ArithmeticError("Modular inverse does not exist")
+    else:
+        return x % p
 
 def check_x(x, Q):
     """ Given a guess for the secret key x and a public key Q = [x]P,
@@ -38,13 +48,18 @@ def recover_x_known_nonce(k, h, r, s, q):
     # Implement the "known nonce" cryptanalytic attack on ECDSA
     # The function is given the nonce k, (h, r, s) and the base point order q
     # The function should compute and return the secret signing key x
-    raise NotImplementedError()
+#    raise NotImplementedError()
+    #from slides
+    x = mod_inv(r, q) * (k * s - h) % q
+    return x
 
 def recover_x_repeated_nonce(h_1, r_1, s_1, h_2, r_2, s_2, q):
     # Implement the "repeated nonces" cryptanalytic attack on ECDSA
     # The function is given the (hashed-message, signature) pairs (h_1, r_1, s_1) and (h_2, r_2, s_2) generated using the same nonce
     # The function should compute and return the secret signing key x
-    raise NotImplementedError()
+#    raise NotImplementedError()
+    x = (h_1 * s_2 - h_2 * s_1) * mod_inv(r_2 * s_1 - r_1 * s_2, q) % q
+    return x
 
 
 def MSB_to_Padded_Int(N, L, list_k_MSB):
