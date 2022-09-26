@@ -39,6 +39,7 @@ def bits_to_int(h_as_bits, q):
             val = val + 1
     return val % q
 
+#custom method to convert integers to sequence of bits
 def int_to_bit_seq(n):
     bit_seq = []
     while n > 0:
@@ -135,9 +136,9 @@ class Point(object):
         # Write a function that doubles a Point object and returns the resulting Point object
 #        raise NotImplementedError()
         #from module description
-        lambda_ = (3 * (self.x)**2 + self.curve.a) * mod_inv((2 * self.y) % self.p, self.p) % self.p
+        lambda_ = ((3 * (self.x)**2 + self.curve.a) * mod_inv((2 * self.y) % self.p, self.p)) % self.p
         x_primed = (lambda_**2 - 2 * self.x) % self.p
-        y_primed = -(self.y + lambda_ * (x_primed - self.x)) % self.p
+        y_primed = (-(self.y + lambda_ * (x_primed - self.x))) % self.p
         return Point(self.curve, x_primed, y_primed)
 
     def add(self, other): #checked
@@ -159,9 +160,9 @@ class Point(object):
             #Then self = -other (other is the additive negative of self; follows from the intuition that for the reduced Weierstraass form a point on the elliptic curve must have 2 different values for y (because y**2) for the same x coordinate). Therefore the sum is the point at infinite.
             return PointInf(self.curve)
         #2 points on the curve; not identical nor identical x coordinates.
-        lambda_ = (self.y - other.y) * mod_inv(self.x - other.x, self.p) % self.p
+        lambda_ = ((self.y - other.y) * mod_inv(self.x - other.x, self.p)) % self.p
         x_primed = (lambda_**2 - self.x - other.x) % self.p
-        y_primed = -(self.y + lambda_ * (x_primed - self.x)) % self.p
+        y_primed = (-(self.y + lambda_ * (x_primed - self.x))) % self.p
         return Point(self.curve, x_primed, y_primed)
 
     def scalar_multiply(self, scalar): #checked
@@ -217,7 +218,7 @@ def Sign_FixedNonce(params, k, x, msg):
     h = bits_to_int(hash_message_to_bits(msg), params.q)
     P_primed = params.P.scalar_multiply(k)
     r = P_primed.x % params.q
-    s = (h + x * r) * mod_inv(k, params.q) % params.q
+    s = ((h + x * r) * mod_inv(k, params.q)) % params.q
     if (r == 0) or (s == 0):
         raise RuntimeError("Invalid signatures")
     return (r, s)
@@ -231,7 +232,7 @@ def Sign(params, x, msg):
         h = bits_to_int(hash_message_to_bits(msg), params.q)
         P_primed = params.P.scalar_multiply(k)
         r = P_primed.x % params.q
-        s = (h + x * r) * mod_inv(k, params.q) % params.q
+        s = ((h + x * r) * mod_inv(k, params.q)) % params.q
         if (r != 0) and (s != 0):
             return (r, s)
 
