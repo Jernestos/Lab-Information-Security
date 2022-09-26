@@ -283,7 +283,8 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q)
     cvp_basis_B, cvp_list_u = hnp_to_cvp(N, L, num_Samples, list_t, list_u, q)
     svp_basis_B = cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u)
-    list_of_f_List = solve_svp(svp_basis_B)
+#    list_of_f_List = solve_svp(svp_basis_B) #originally
+    list_of_f_List = solve_svp(IntegerMatrix.from_matrix(svp_basis_B))
     # The function should recover the secret signing key x from the output of the SVP solver and return it
     raise NotImplementedError()
 
