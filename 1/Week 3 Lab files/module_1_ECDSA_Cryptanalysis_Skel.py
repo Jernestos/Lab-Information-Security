@@ -107,19 +107,34 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
             a = MSB_to_Padded_Int(N, L, list_k_MSB)
             u = (a - z) % q #TODO check for modulo q
             return (t, u)
-            
         elif givenbits == "lsbs":
-            #TODO
-            raise NotImplementedError()
+            #from equation (1) (see module pdf): isolate k, substitute k with the form involving a_head and e; isolate e and bring everything that has not x as factor to the same side as e.
+            #Hope that 2^L has inverse in mod q
+            a = LSB_to_Int(list_k_MSB) #modulo q? - I don't think so?
+            s_inv = mod_inv(s, q)
+            two_pow_L_inv = mod_inv(2**L, q)
+            u = ((a - s_inv * h) * two_pow_L_inv) % q
+            t = ((r * s_inv) * two_pow_L_inv) % q
+            return (t, u)
         else:
             RuntimeError("setup_hnp_single_sample: Invalid givenbits argument.")
     elif algorithm == "ecschnorr":
+        # In the case of EC-Schnorr, r may be set to h
+        #Idea: use same strategy: reformulate signing equation to known t and u values
         if givenbits == "msbs":
-            #TODO
-            raise NotImplementedError()
+            u = (MSB_to_Padded_Int(N, L, list_k_MSB) - 1) % q
+            #r = h; the signature algorithm for schnor does not contain r
+            t = h
+            return (t, u)
         elif givenbits == "lsbs":
-            #TODO
-            raise NotImplementedError()
+            #nearly same procedure as in the ecdsa, lsbs case
+            #Hope that 2^L has inverse in mod q
+            a = LSB_to_Int(list_k_MSB)
+            two_pow_L_inv = mod_inv(2**L, q)
+            #r = h; the signature algorithm for schnor does not contain r
+            t = (h * two_pow_L_inv) % q
+            u = ((a - s) * two_pow_L_inv) % q
+            return (t, u)
         else:
             RuntimeError("setup_hnp_single_sample: Invalid givenbits argument.")
     else:
@@ -143,17 +158,29 @@ def setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, 
                 u_list.append(u_i)
             return (t_list, u_list)
         elif givenbits == "lsbs":
-            #TODO
-            raise NotImplementedError()
+            #idea: since setup_hnp_single_sample takes care of generating (t, u) lists depending on givenbits and algorithm, just reuse this code and adapt it if necessary for ecschnorr
+            for i in range(num_Samples):
+                (t_i, u_i) = setup_hnp_single_sample(N, L, listoflists_k_MSB[i], list_h[i], list_r[i], list_s[i], q, givenbits, algorithm)
+                t_list.append(t_i)
+                u_list.append(u_i)
+            return (t_list, u_list)
         else:
             RuntimeError("setup_hnp_all_samples: Invalid givenbits argument.")
     elif algorithm == "ecschnorr":
-        if givenbits == "msbs":
-            #TODO
-            raise NotImplementedError()
+        # In the case of EC-Schnorr, list_r may be set to list_h
+        #list_r = list_h #don't even use list_r for schnorr; so it does not really matter here
+        if givenbits == "msbs":\
+            for i in range(num_Samples):
+                (t_i, u_i) = setup_hnp_single_sample(N, L, listoflists_k_MSB[i], list_h[i], list_r[i], list_s[i], q, givenbits, algorithm)
+                t_list.append(t_i)
+                u_list.append(u_i)
+            return (t_list, u_list)
         elif givenbits == "lsbs":
-            #TODO
-            raise NotImplementedError()
+            for i in range(num_Samples):
+                (t_i, u_i) = setup_hnp_single_sample(N, L, listoflists_k_MSB[i], list_h[i], list_r[i], list_s[i], q, givenbits, algorithm)
+                t_list.append(t_i)
+                u_list.append(u_i)
+            return (t_list, u_list)
         else:
             RuntimeError("setup_hnp_all_samples: Invalid givenbits argument.")
     else:
@@ -162,7 +189,7 @@ def setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, 
 
 #from fpylll import IntegerMatrix
 
-def hnp_to_cvp(N, L, num_Samples, list_t, list_u, q):
+def hnp_to_cvp(N, L, num_Samples, list_t, list_u, q): #checked
     # Implement a function that takes as input an instance of HNP and converts it into an instance of the closest vector problem (CVP)
     # The function is given as input a list of t values, a list of u values and the base point order q
     # The function should return the CVP basis matrix B (to be implemented as a nested list) and the CVP target vector u (to be implemented as a list)
@@ -188,7 +215,7 @@ def hnp_to_cvp(N, L, num_Samples, list_t, list_u, q):
     for i in range(num_Samples):
         temp_row[i] = list_t[i] * factor
     temp_row[num_Samples] = 1 #rightmost, lowermost element; originally 1/2**(L + 1)
-    base_matrix_B.append(temp_row)
+    base_matrix_B.append(temp_row) #matrix complete
     
     #compute vector u
     cvp_target_vector_u = [0] * matrix_size
@@ -198,7 +225,7 @@ def hnp_to_cvp(N, L, num_Samples, list_t, list_u, q):
     return (base_matrix_B, cvp_target_vector_u) #(list of lists, list)
 
     
-def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
+def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
     # Implement a function that takes as input an instance of CVP and converts it into an instance of the shortest vector problem (SVP)
     # Your function should use the Kannan embedding technique in the lecture slides
     # The function is given as input a CVP basis matrix B and the CVP target vector u
@@ -212,10 +239,10 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     #use slide 34 of week 3
     svp_basis_matrix_B_primed = copy.deepcopy(cvp_basis_B) #recall: entries scaled by factor = 2**(L + 1) in hnp_to_cvp
     for row in svp_basis_matrix_B_primed:
-        row.append(0)
+        row.append(0) #one extra column full of zeroes, appended to the right-side of matrix
     
     #M = ||f|| <= lambda1 / 2; lambda1 = (n/(2*pi*e))^(1/2) * det(L)^(1/n) #from slides - Gaussian Heuristic
-    M = 42 #TODO
+    M = 42 #TODO???
     last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
     last_row.append(M)
     
@@ -238,6 +265,7 @@ def solve_cvp(cvp_basis_B, cvp_list_u):
     #Question 4: Question 5 suggests to use some kind of preprocessing and the hint gives it away; use LLL or BKZ as preprocessing of cvp_basis_B; the papers above suggest to use LLL.
     #Question 5:
 #    raise NotImplementedError()
+    #From slide 21: LLL often exactly solves SVP
     B = LLL.reduction(cvp_basis_B) #BKZ.reduction(cvp_basis_B, BKZ.Param(block_size)) - block_size?
     v = list(CVP.closest_vector(B, cvp_list_u)) #without list, it's just a multi-dim tuple
     return v #list
@@ -255,17 +283,21 @@ def solve_svp(svp_basis_B):
     #Question 8: Suggested by paper above
     #Question 9: From lecture slides and exercise, norm(f) <= sqrt(n + 1) * 2**(N - L - 1) #TODO
 #    raise NotImplementedError()
+    #https://github.com/fplll/fplll/blob/master/fplll/svpcvp.cpp
     B = LLL.reduction(svp_basis_B)
-    #v = SVP.shortest_vector(IntegerMatrix B)
-    #Observe: first row of B and v match (experimentally tested on cocalc). -> B yields candidate vectors.
+    #https://github.com/fplll/fpylll/blob/master/src/fpylll/fplll/svpcvp.pyx
+    #v = SVP.shortest_vector(IntegerMatrix B, method="fast", int flags=SVP_DEFAULT, pruning=True, preprocess=True, max_aux_solutions=0)
+    #:param max_aux_solutions: maximum number of additional short-ish solutions to return
+    
+    #From slide 21: LLL often exactly solves SVP
+    #Observe (through experimentation on cocalc): The first row of B and SVP.shortest_vector(svp_basis_B, method="fast", max_aux_solutions=0) yield the same vector; holds also for SVP.shortest_vector(svp_basis_B, method="proved", max_aux_solutions=0); Furthermore, the rows of B are sorted in a specific manner; norm increasing; the norm-wise greatest vector is the last row
+    #idea: Use use rows of B as potential candidates
     result = []
     for ele in B:
         result.append(list(ele))
-    return result[1:] #omit first vector; #list of lists
-    
+    return result #result[1:] potentially omit first vector; #list of lists;; alternatively return B and then adapt code appropriatly; via this way, can determine which rows to use
 
-
-def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"):
+def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"): #checked
     # Implement the "repeated nonces" cryptanalytic attack on ECDSA and EC-Schnorr using the in-built CVP-solver functions from the fpylll library
     # The function is partially implemented for you. Note that it invokes some of the functions that you have already implemented
     list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q)
@@ -273,11 +305,19 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     #v_List = solve_cvp(cvp_basis_B, cvp_list_u) #original version
     v_List = solve_cvp(IntegerMatrix.from_matrix(cvp_basis_B), cvp_list_u) #have to use this (instead of list of lists)
     # The function should recover the secret signing key x from the output of the CVP solver and return it
-    x = v_List[-1]
-    return x
+    x = v_List[-1] #modulo q?
+#    b = check_x(Q, x)
+    b = check_x(Q, x % q)
+    if b:
+        print(Q, end=" ")
+        print("success!")
+    else:
+        print(Q, end=" ")
+        print("failure")
+    return x % q
 #    raise NotImplementedError()
 
-def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"):
+def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"): #TODO
     # Implement the "repeated nonces" cryptanalytic attack on ECDSA and EC-Schnorr using the in-built CVP-solver functions from the fpylll library
     # The function is partially implemented for you. Note that it invokes some of the functions that you have already implemented
     list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q)
@@ -286,6 +326,7 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
 #    list_of_f_List = solve_svp(svp_basis_B) #originally
     list_of_f_List = solve_svp(IntegerMatrix.from_matrix(svp_basis_B))
     # The function should recover the secret signing key x from the output of the SVP solver and return it
+    #which element to extract from list_of_f_List?
     raise NotImplementedError()
 
 
