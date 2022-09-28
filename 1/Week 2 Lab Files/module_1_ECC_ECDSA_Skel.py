@@ -234,7 +234,7 @@ def Sign_FixedNonce(params, k, x, msg):
     P_primed = params.P.scalar_multiply(k)
     r = P_primed.x % q
     s = ((h + x * r) * mod_inv(k, q)) % q
-    if (r == 0) or (s == 0):
+    if (r == 0) or (s == 0): #are k's given such that this is never true?
         raise RuntimeError("Invalid signatures")
     return (r, s)
     

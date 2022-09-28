@@ -266,6 +266,7 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
     #Then we can solve for M <= (1/2)^((n+2)/(n+1))*((n+2)/(2*pi*e))^(n+2/2) * (2^(L+1) * q)^(n/(n+1))
     #Another candidate is to consider L_cvp, and not L_svp for a potential M value.
     #Similar computation shows that M <= (1/2) * ((n+1)/(2*pi*e))^(1/2) * (2^(L+1) * q)^(n/(n+1))
+    #this work on cocalc
     n = num_Samples
     #first version for svp basis
     one_half_factor = (1/2)**((n+2) / (n+1))
@@ -274,12 +275,13 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
     scaled_q_powded = scaled_q**(n/(n+1))
     M = round(one_half_factor * n_n_constant * scaled_q_powded)
     
-    #second version for svp basis
-    one_half_factor = (1/2)
-    n_n_constant = ((n+1) / (2 * math.pi * math.e))
-    scaled_q = cvp_basis_B[0][0] #upper left element; q * 2^(L + 1)
-    scaled_q_powded = scaled_q**(n/(n+1))
-    M = round(one_half_factor * n_n_constant * scaled_q_powded)
+#    #this works on cocalc as well
+#    #second version for svp basis
+#    one_half_factor = (1/2)
+#    n_n_constant = ((n+1) / (2 * math.pi * math.e))
+#    scaled_q = cvp_basis_B[0][0] #upper left element; q * 2^(L + 1)
+#    scaled_q_powded = scaled_q**(n/(n+1))
+#    M = round(one_half_factor * n_n_constant * scaled_q_powded)
     
     #too slow?
     last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
@@ -291,9 +293,6 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
 #    cvp_list_u.append(M)
 #    cvp_basis_B.append(cvp_list_u)
 #    return cvp_basis_B
-    
-
-    
 
 def solve_cvp(cvp_basis_B, cvp_list_u):
     # Implement a function that takes as input an instance of CVP and solves it using in-built CVP-solver functions from the fpylll library
@@ -374,15 +373,15 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
 #    list_of_f_List = solve_svp(svp_basis_B) #originally
     list_of_f_List = solve_svp(IntegerMatrix.from_matrix(svp_basis_B))
     # The function should recover the secret signing key x from the output of the SVP solver and return it
-    #which element to extract from list_of_f_List?  By question 10, (and construction), use the first one.
+    #which element to extract from list_of_f_List?  By question 10, (and construction), use the first one. (the second one from the overall basis)
 #    raise NotImplementedError()
     f_n_m = list_of_f_List[0]
     #from slides
-    f = f_n_m[:-1]
-    v = cvp_list_u - f
+    f = f_n_m[:-1] #without the M element; extract the vector f (as outlined in slides)
+    v = cvp_list_u - f #slides
     x = v[-1] #last element is x
 #    b = check_x(Q, x)
-    b = check_x(Q, x % q)
+    b = check_x(Q, x % q) #it seems to work with x % q
     if b:
         print("success!")
     else:
