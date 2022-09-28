@@ -30,7 +30,7 @@ def mod_inv(a, p):
 
 # Function to map a truncated bit string to an integer
 # No modulo q
-def bits_to_int(h_as_bits):
+def bits_to_int(h_as_bits): #checked - workes correctly
     val = 0
     for i in range(len(h_as_bits)):
         val = val * 2
@@ -94,41 +94,57 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
     # The function should return (t, u) computed as described in the lectures
     # In the case of EC-Schnorr, r may be set to h
 #    raise NotImplementedError()
+    #input sanity check? - according to moodle forum not needed as we can assume we work with correct input (assuming that answer applies to all labs)
     if algorithm == "ecdsa":
-        if givenbits == "msbs":
+        if givenbits == "msbs": #checked - ok
             s_inv = mod_inv(s, q)
             t = r * s_inv % q
             z = h * s_inv % q
             a = MSB_to_Padded_Int(N, L, list_k_MSB)
             u = (a - z) % q #TODO check for modulo q
             return (t, u)
-        elif givenbits == "lsbs":
+        elif givenbits == "lsbs": #checked
             #from equation (1) (see module pdf): isolate k, substitute k with the form involving a_head and e; isolate e and bring everything that has not x as factor to the same side as e.
+            #so we first get k = s^(-1)*h + s^(-1)*r*x mod q
+            #then substitute k with form involving a_head and e;
+            #rearrange such that we get
+            #e + (a_head + s^(-1)*h)*inv(2^L) = r*s^(-1)*inv(2^L, q)*x mod q
+            #e + u                            = t * x
             #Hope that 2^L has inverse in mod q
-            a = LSB_to_Int(list_k_MSB) #modulo q? - I don't think so?
+            a = LSB_to_Int(list_k_MSB) #modulo q? - No.
             s_inv = mod_inv(s, q)
             two_pow_L_inv = mod_inv(2**L, q)
-            u = ((a - s_inv * h) * two_pow_L_inv) % q
-            t = ((r * s_inv) * two_pow_L_inv) % q
+            u = (a - s_inv * h) * two_pow_L_inv % q
+            t = (r * s_inv) * two_pow_L_inv % q
             return (t, u)
         else:
             RuntimeError("setup_hnp_single_sample: Invalid givenbits argument.")
     elif algorithm == "ecschnorr":
         # In the case of EC-Schnorr, r may be set to h
         #Idea: use same strategy: reformulate signing equation to known t and u values
-        if givenbits == "msbs":
-            u = (MSB_to_Padded_Int(N, L, list_k_MSB) - 1) % q
+        if givenbits == "msbs": #checked
+            #rearrange schnorr signature equation for s to solve for k
+            #k = s + hx mod q
+            #substitute k for MSB form involving a and e; subtract s from both sides
+            #we get hx = a * 2^(N-L) + 2^(N - L - 1) -s + e
+            #        tx = u + e
+            u = (MSB_to_Padded_Int(N, L, list_k_MSB) - s) % q
             #r = h; the signature algorithm for schnor does not contain r
             t = h
             return (t, u)
-        elif givenbits == "lsbs":
+        elif givenbits == "lsbs": #checked
             #nearly same procedure as in the ecdsa, lsbs case
+            #rearrange schnorr signature equation for s to solve for k
+            #k = s + hx mod q
+            #substitute k for MSB form involving a and e; subtract s from both sides; multiply by inv(2^L, q) to get
+            #e + (a - s) * inv(2^L, q) = x * h * inv(2^L, q)
+            #e +            u          = t * x
             #Hope that 2^L has inverse in mod q
             a = LSB_to_Int(list_k_MSB)
             two_pow_L_inv = mod_inv(2**L, q)
             #r = h; the signature algorithm for schnor does not contain r
-            t = (h * two_pow_L_inv) % q
-            u = ((a - s) * two_pow_L_inv) % q
+            t = h * two_pow_L_inv % q
+            u = (a - s) * two_pow_L_inv % q
             return (t, u)
         else:
             RuntimeError("setup_hnp_single_sample: Invalid givenbits argument.")
@@ -163,7 +179,7 @@ def setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, 
             RuntimeError("setup_hnp_all_samples: Invalid givenbits argument.")
     elif algorithm == "ecschnorr":
         # In the case of EC-Schnorr, list_r may be set to list_h
-        #list_r = list_h #don't even use list_r for schnorr; so it does not really matter here
+        #list_r = list_h #don't even use list_r for schnorr for our purposes; so it does not really matter here
         if givenbits == "msbs":
             for i in range(num_Samples):
                 (t_i, u_i) = setup_hnp_single_sample(N, L, listoflists_k_MSB[i], list_h[i], list_r[i], list_s[i], q, givenbits, algorithm)
@@ -233,12 +249,13 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
         
     #use slide 34 of week 3
     #too slow?
-#    svp_basis_matrix_B_primed = copy.deepcopy(cvp_basis_B) #recall: entries scaled by factor = 2**(L + 1) in hnp_to_cvp
-#    for row in svp_basis_matrix_B_primed:
-#        row.append(0) #one extra column full of zeroes, appended to the right-side of matrix
+    svp_basis_matrix_B_primed = copy.deepcopy(cvp_basis_B) #recall: entries scaled by factor = 2**(L + 1) in hnp_to_cvp
+    for row in svp_basis_matrix_B_primed:
+        row.append(0) #one extra column full of zeroes, appended to the right-side of matrix
     
-    for row in cvp_basis_B:
-        row.append(0)
+    #reference issues - need original matrix?
+#    for row in cvp_basis_B:
+#        row.append(0)
     
     #What we need: M being an integer - either by scaling or round up/down; scaling with correct factor too difficult to find (limited by machine precision) -> just round up/down.
     #From slides:
@@ -265,16 +282,17 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
     M = round(one_half_factor * n_n_constant * scaled_q_powded)
     
     #too slow?
-#    last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
-#    last_row.append(M) #right lower element of basis for svp
+    last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
+    last_row.append(M) #right lower element of basis for svp
+    svp_basis_matrix_B_primed.append(last_row) #basis for svp done
+    return svp_basis_matrix_B_primed #(list of lists)
     
-    cvp_list_u.append(M)
-    cvp_basis_B.append(cvp_list_u)
-    return cvp_basis_B
+    #reference issues - need original matrix?
+#    cvp_list_u.append(M)
+#    cvp_basis_B.append(cvp_list_u)
+#    return cvp_basis_B
     
-    #svp_basis_matrix_B_primed.append(last_row) #basis for svp done
-    
-#    return svp_basis_matrix_B_primed #(list of lists)
+
     
 
 def solve_cvp(cvp_basis_B, cvp_list_u):
@@ -338,7 +356,6 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
 #    b = check_x(Q, x)
     b = check_x(Q, x % q)
     if b:
-        print(Q, end=" ")
         print("success!")
     else:
         print(Q, end=" ")
@@ -366,13 +383,13 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
 #    b = check_x(Q, x)
     b = check_x(Q, x % q)
     if b:
-        print(Q, end=" ")
         print("success!")
     else:
         print(Q, end=" ")
         print("failure")
     return x % q
 #    raise NotImplementedError()
+#to run tests, must implement all functions; not just leave some with raise NotImplementedError()
 
 # testing code: do not modify
 
