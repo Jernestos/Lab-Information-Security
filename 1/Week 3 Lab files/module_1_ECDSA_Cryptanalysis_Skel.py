@@ -359,7 +359,8 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
         print("success!")
     else:
         print(Q, end=" ")
-        print("failure")
+        print("recover_x_partial_nonce_CVP failure")
+        #RuntimeError("recover_x_partial_nonce_CVP failure")
     return x % q
 #    raise NotImplementedError()
 
@@ -386,7 +387,8 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
         print("success!")
     else:
         print(Q, end=" ")
-        print("failure")
+        print("recover_x_partial_nonce_SVP failure")
+        #RuntimeError("recover_x_partial_nonce_SVP failure")
     return x % q
 #    raise NotImplementedError()
 #to run tests, must implement all functions; not just leave some with raise NotImplementedError()
