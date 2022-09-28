@@ -32,8 +32,7 @@ def mod_inv(a, p):
 # No modulo q
 def bits_to_int(h_as_bits):
     val = 0
-    len = int(math.log(q, 2) + 1)
-    for i in range(len):
+    for i in range(len(h_as_bits)):
         val = val * 2
         if(h_as_bits[i] == '1'):
             val = val + 1
@@ -94,7 +93,7 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
     # The function is given a list of the L most significant bts of the N-bit nonce k, along with (h, r, s) and the base point order q
     # The function should return (t, u) computed as described in the lectures
     # In the case of EC-Schnorr, r may be set to h
-#    raise NotImplementedError()
+    raise NotImplementedError()
     if algorithm == "ecdsa":
         if givenbits == "msbs":
             s_inv = mod_inv(s, q)
@@ -142,7 +141,7 @@ def setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, 
     # The function should return a list of t values and a list of u values computed as described in the lectures
     # Hint: Use the function you implemented above to set up the t and u values for each instance
     # In the case of EC-Schnorr, list_r may be set to list_h
-#    raise NotImplementedError()
+    raise NotImplementedError()
     #TODO sanity checks on input values e.g. list length == num_Samples
     t_list = []
     u_list = []
@@ -165,7 +164,7 @@ def setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, 
     elif algorithm == "ecschnorr":
         # In the case of EC-Schnorr, list_r may be set to list_h
         #list_r = list_h #don't even use list_r for schnorr; so it does not really matter here
-        if givenbits == "msbs":\
+        if givenbits == "msbs":
             for i in range(num_Samples):
                 (t_i, u_i) = setup_hnp_single_sample(N, L, listoflists_k_MSB[i], list_h[i], list_r[i], list_s[i], q, givenbits, algorithm)
                 t_list.append(t_i)
@@ -190,7 +189,7 @@ def hnp_to_cvp(N, L, num_Samples, list_t, list_u, q): #checked
     # The function is given as input a list of t values, a list of u values and the base point order q
     # The function should return the CVP basis matrix B (to be implemented as a nested list) and the CVP target vector u (to be implemented as a list)
     # NOTE: The basis matrix B and the CVP target vector u should be scaled appropriately. Refer lecture slides and lab sheet for more details
-#    raise NotImplementedError()
+    raise NotImplementedError()
     #Question 1: TODO I think that is not possible. Integer x is between 1 and q - 1, inclusive.
     #Question 2: Does not work (tested on cocalc); typerror; real numbers not supported
     #Question 3: Find a factor c such that every element of the basis matrix/target vector multiplied with c yields an integer.
@@ -214,8 +213,8 @@ def hnp_to_cvp(N, L, num_Samples, list_t, list_u, q): #checked
     base_matrix_B.append(temp_row) #matrix complete
     
     #compute vector u
-    cvp_target_vector_u = [0] * matrix_size
-    for i in range(matrix_size):
+    cvp_target_vector_u = [0] * dim
+    for i in range(num_Samples):
         cvp_target_vector_u[i] = list_u[i] * factor #set u
     
     return (base_matrix_B, cvp_target_vector_u) #(list of lists, list)
@@ -227,7 +226,7 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
     # The function is given as input a CVP basis matrix B and the CVP target vector u
     # The function should use the Kannan embedding technique to output the corresponding SVP basis matrix B' of apropriate dimensions.
     # The SVP basis matrix B' should again be implemented as a nested list
-#    raise NotImplementedError()
+    raise NotImplementedError()
     
     #Question 6: M <= lambda1 * (1/2), where lambda from gaussian heuristics
     #Question 7: Since we scale the elements of the basis matrix, there is no need to scale M, I think.
@@ -283,7 +282,7 @@ def solve_cvp(cvp_basis_B, cvp_list_u):
     #These three sources give the idea to use a reduced basis, using LLL
     #Question 4: Question 5 suggests to use some kind of preprocessing and the hint gives it away; use LLL or BKZ as preprocessing of cvp_basis_B; the papers above suggest to use LLL.
     #Question 5:
-#    raise NotImplementedError()
+    raise NotImplementedError()
     #From slide 21: LLL often exactly solves SVP
     B = LLL.reduction(cvp_basis_B) #BKZ.reduction(cvp_basis_B, BKZ.Param(block_size)) - block_size?
     v = list(CVP.closest_vector(B, cvp_list_u)) #without list, it's just a multi-dim tuple
@@ -302,7 +301,7 @@ def solve_svp(svp_basis_B):
     #Question 8: Suggested by paper above; also see observation below
     #Question 9: From lecture slides and exercise, norm(f) <= sqrt(n + 1) * 2**(N - L - 1); using suggestion from qustion 10, no, I think?#TODO
     #Question 10: Yes, see below
-#    raise NotImplementedError()
+    raise NotImplementedError()
     #https://github.com/fplll/fplll/blob/master/fplll/svpcvp.cpp
     B = LLL.reduction(svp_basis_B)
     #https://github.com/fplll/fpylll/blob/master/src/fpylll/fplll/svpcvp.pyx
@@ -325,6 +324,7 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     #Question 11: We get back x directly (thanks to scaling) by just reading out the last element
     #v_List = solve_cvp(cvp_basis_B, cvp_list_u) #original version
     v_List = solve_cvp(IntegerMatrix.from_matrix(cvp_basis_B), cvp_list_u) #have to use this (instead of list of lists)
+    raise NotImplementedError()
     # The function should recover the secret signing key x from the output of the CVP solver and return it
     x = v_List[-1] #modulo q?
 #    b = check_x(Q, x)
@@ -349,6 +349,7 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     list_of_f_List = solve_svp(IntegerMatrix.from_matrix(svp_basis_B))
     # The function should recover the secret signing key x from the output of the SVP solver and return it
     #which element to extract from list_of_f_List?  By question 10, (and construction), use the first one.
+    raise NotImplementedError()
     f_n_m = list_of_f_List[0]
     #from slides
     f = f_n_m[:-1]
