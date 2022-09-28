@@ -4,7 +4,7 @@ import warnings
 import hashlib
 
 # Euclidean algorithm for gcd computation
-# Output: gcd g, Bezout's coefficient s, t such that g = s * a + t * b
+# Output: gcd g, Bezout's coefficients s, t such that g = s * a + t * b
 def egcd(a, b):
     if a == 0:
         return b, 0, 1
@@ -39,12 +39,12 @@ def bits_to_int(h_as_bits, q):
             val = val + 1
     return val % q
 
-#custom method to convert integers to sequence of bits
+#custom method to convert integers to sequence of bits; stored as list of bools
 def int_to_bit_seq(n):
     bit_seq = []
     while n > 0:
-        b = n % 2 == 1
-        n //= 2
+        b = (n % 2) == 1
+        n //= 2 #integer division to remove trailing floating point "floor"
         bit_seq.append(b)
     return bit_seq
 
@@ -87,7 +87,7 @@ class PointInf(object): #call point at infinity = p_inf; checked
         # Write a function that negates a PointInf object.        
         # Ths is an optional extension and is not evaluated
 #        raise NotImplementedError()
-        return self #p_inf is its own inverse
+        return self #p_inf is its own additive inverse; from slides
 
     def double(self): #checked
         # Write a function that doubles a PointInf object.
@@ -102,13 +102,14 @@ class PointInf(object): #call point at infinity = p_inf; checked
         #either p_inf + non-p_inf or p_inf + p_inf
         #Check if other is either of type PointInf, Point, or something else (in this case throw exception)
         if isinstance(other, PointInf):
-            return self
+            return self #p_inf + p_inf = p_inf from slides
         if isinstance(other, Point):
-            return other
+            return other #non_p_inf + p_inf = non_p_inf; from slides
         raise TypeError("Variable _other_ has invalid type.")
 
 # A point on an elliptic curve is represented as an object of type Point. 
-# Note that for this lab, we will use the affine coordinates-based representation of a point on an elliptic curve.
+# Note that for this lab, we will use 
+# the affine coordinates-based representation of a point on an elliptic curve.
 class Point(object):
 
     def __init__(self, curve, x, y):
@@ -130,15 +131,19 @@ class Point(object):
         # Write a function that negates a Point object and returns the resulting Point object
         # Ths is an optional extension and is not evaluated
 #        raise NotImplementedError()
-        return Point(self.curve, self.x, -self.y % self.p) #slides
+        return Point(self.curve, self.x, -self.y % self.p) #from slides
 
     def double(self): #checked
         # Write a function that doubles a Point object and returns the resulting Point object
 #        raise NotImplementedError()
-        #from module description
-        lambda_ = ((3 * (self.x)**2 + self.curve.a) * mod_inv((2 * self.y) % self.p, self.p)) % self.p
-        x_primed = (lambda_**2 - 2 * self.x) % self.p
-        y_primed = (-(self.y + lambda_ * (x_primed - self.x))) % self.p
+        #from module description; and slides
+        #make it faster by storing the references
+        x = self.x
+        y = self.y
+        p = self.p
+        lambda_ = (3 * x**2 + self.curve.a) * mod_inv(2 * y, p) % p
+        x_primed = (lambda_**2 - 2 * x) % p
+        y_primed = (-(y + lambda_ * (x_primed - x))) % p
         return Point(self.curve, x_primed, y_primed)
 
     def add(self, other): #checked
@@ -153,16 +158,22 @@ class Point(object):
         #check special cases
         if self.is_equal(other):
             return self.double()
-        #must check for points are on the same curve before proceeding with addition
+        #must check if points are on the same curve before proceeding with addition
         if not self.curve.is_equal(other.curve):
             raise ArithmeticError("Cannot add points on 2 different curves")
-        if self.x == other.x and self.y != other.y:
+        #make it faster by storing the references
+        x = self.x
+        y = self.y
+        ox = other.x
+        oy = other.y
+        p = self.p
+        if x == ox and y != oy:
             #Then self = -other (other is the additive negative of self; follows from the intuition that for the reduced Weierstraass form a point on the elliptic curve must have 2 different values for y (because y**2) for the same x coordinate). Therefore the sum is the point at infinite.
             return PointInf(self.curve)
         #2 points on the curve; not identical nor identical x coordinates.
-        lambda_ = ((self.y - other.y) * mod_inv(self.x - other.x, self.p)) % self.p
-        x_primed = (lambda_**2 - self.x - other.x) % self.p
-        y_primed = (-(self.y + lambda_ * (x_primed - self.x))) % self.p
+        lambda_ = ((y - oy) * mod_inv(x - ox, p)) % p
+        x_primed = (lambda_**2 - x - ox) % p
+        y_primed = (-(y + lambda_ * (x_primed - x))) % p
         return Point(self.curve, x_primed, y_primed)
 
     def scalar_multiply(self, scalar): #checked
@@ -173,16 +184,17 @@ class Point(object):
         #check scalar of type long or int
         if not isinstance(scalar, int): # (python3 does not have long) or (isinstance(scalar, long):
             raise TypeError("Scalar has not type int")
+        #could check if point in question is the point at infinity but this is a class specifically not for this point
         if scalar == 0 or scalar == self.curve.q: #by definition
             return PointInf(self.curve)
-        s = scalar % self.curve.q #module q because cyclic group of order q
+        s = scalar % self.curve.q #module q because cyclic group of order q, assuming we are dealing here with a generator base point of order q, that lies on EC
+        #from slides
         result = PointInf(self.curve)
-        
         bit_sequence = int_to_bit_seq(s)
-        for b in reversed(bit_sequence):
-            result = result.double()
+        for b in reversed(bit_sequence): #bit sequence is reversed when using int_to_bit_seq; have to begin with MSB
+            result = result.double() #result * 2
             if b:
-                result = self.add(result) 
+                result = self.add(result) #result + P
         return result
                 
 
@@ -206,6 +218,7 @@ class ECDSA_Params(object):
 def KeyGen(params):
     # Write a function that takes as input an ECDSA_Params object and outputs the key pair (x, Q)
 #    raise NotImplementedError()
+    #from module description
     x = random.randint(1, params.q - 1)
     Q = params.P.scalar_multiply(x)
     return (x, Q)
@@ -213,12 +226,14 @@ def KeyGen(params):
 def Sign_FixedNonce(params, k, x, msg):
     # Write a function that takes as input an ECDSA_Params object, a fixed nonce k, a signing key x, and a message msg, and outputs a signature (r, s)
 #    raise NotImplementedError()
+    #sanity check for some inputs; not necessary
     if not (1 <= k and k <= params.q - 1):
         raise RuntimeError("Invalid k")
-    h = bits_to_int(hash_message_to_bits(msg), params.q)
+    q = params.q
+    h = bits_to_int(hash_message_to_bits(msg), q)
     P_primed = params.P.scalar_multiply(k)
-    r = P_primed.x % params.q
-    s = ((h + x * r) * mod_inv(k, params.q)) % params.q
+    r = P_primed.x % q
+    s = ((h + x * r) * mod_inv(k, q)) % q
     if (r == 0) or (s == 0):
         raise RuntimeError("Invalid signatures")
     return (r, s)
@@ -227,12 +242,13 @@ def Sign(params, x, msg):
     # Write a function that takes as input an ECDSA_Params object, a signing key x, and a message msg, and outputs a signature (r, s)
     # The nonce is to be generated uniformly at random in the appropriate range
 #    raise NotImplementedError()
+    q = params.q
     while True: #from module slides
         k = random.randint(1, params.q - 1)
-        h = bits_to_int(hash_message_to_bits(msg), params.q)
+        h = bits_to_int(hash_message_to_bits(msg), q)
         P_primed = params.P.scalar_multiply(k)
         r = P_primed.x % params.q
-        s = ((h + x * r) * mod_inv(k, params.q)) % params.q
+        s = ((h + x * r) * mod_inv(k, q)) % q
         if (r != 0) and (s != 0):
             return (r, s)
 
@@ -240,14 +256,16 @@ def Verify(params, Q, msg, r, s):
     # Write a function that takes as input an ECDSA_Params object, a verification key Q, a message msg, and a signature (r, s)
     # The output should be either 0 (indicating failure) or 1 (indicating success)
 #    raise NotImplementedError()
-    if not ((1 <= r and r <= params.q - 1) and (1 <= s and s <= params.q - 1)):
+    #sanity check on inpupts
+    q = params.q
+    if not ((1 <= r and r <= q - 1) and (1 <= s and s <= q - 1)):
         return 0
-    h = bits_to_int(hash_message_to_bits(msg), params.q)
-    w = mod_inv(s, params.q)
-    u1 = w * h % params.q
-    u2 = w * r % params.q
+    h = bits_to_int(hash_message_to_bits(msg), q)
+    w = mod_inv(s, q)
+    u1 = w * h % q
+    u2 = w * r % q
     Z = params.P.scalar_multiply(u1).add(Q.scalar_multiply(u2))
-    if (r == Z.x % params.q):
+    if (r == Z.x % q):
         return 1
     return 0
 
