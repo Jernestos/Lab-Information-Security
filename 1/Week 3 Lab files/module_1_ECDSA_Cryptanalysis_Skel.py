@@ -8,10 +8,6 @@ from fpylll import SVP
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
-#Question 10:
-#Question 11:
-#Question 12:
-    
 #copy paste egcd, mod_inv and bits_to_int (modified) from module_1_ECC_ECDSA, prewritten code
 # Euclidean algorithm for gcd computation
 # Output: gcd g, Bezout's coefficient s, t such that g = s * a + t * b
@@ -233,20 +229,43 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
     # The SVP basis matrix B' should again be implemented as a nested list
 #    raise NotImplementedError()
     
-    #Question 6:
-    #Question 7:
+    #Question 6: M <= lambda1 * (1/2), where lambda from gaussian heuristics
+    #Question 7: Since we scale the elements of the basis matrix, there is no need to scale M, I think.
         
     #use slide 34 of week 3
     svp_basis_matrix_B_primed = copy.deepcopy(cvp_basis_B) #recall: entries scaled by factor = 2**(L + 1) in hnp_to_cvp
     for row in svp_basis_matrix_B_primed:
         row.append(0) #one extra column full of zeroes, appended to the right-side of matrix
     
-    #M = ||f|| <= lambda1 / 2; lambda1 = (n/(2*pi*e))^(1/2) * det(L)^(1/n) #from slides - Gaussian Heuristic
-    M = 42 #TODO???
-    last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
-    last_row.append(M)
+    #What we need: M being an integer - either by scaling or round up/down; scaling with correct factor too difficult to find (limited by machine precision) -> just round up/down.
+    #From slides:
+    #M = ||f|| <= lambda1 / 2; For lambda (after scaling, after using the Kannen embedding technique)
+    #lambda1 = ((n+2)/(2*pi*e))^(1/2) * det(L_svp)^(1/(n+2)) #from slides - Gaussian Heuristic
+    #det(L_svp) = (2^(L+1) * q)^n * M
+    #Putting this together: M = ||f|| <= (1/2) * ((n+2)/(2*pi*e))^(1/2) * ((2^(L+1) * q)^n * M)^(1/(n+2))
+    #Then we can solve for M <= (1/2)^((n+2)/(n+1))*((n+2)/(2*pi*e))^(n+2/2) * (2^(L+1) * q)^(n/(n+1))
+    #Another candidate is to consider L_cvp, and not L_svp for a potential M value.
+    #Similar computation shows that M <= (1/2) * ((n+1)/(2*pi*e))^(1/2) * (2^(L+1) * q)^(n/(n+1))
+    n = num_Samples
+    #first version for svp basis
+    one_half_factor = (1/2)**((n+2) / (n+1))
+    n_n_constant = ((n+2) / (2 * math.pi * math.e))**((n+2)/2)
+    scaled_q = cvp_basis_B[0][0] #upper left element; q * 2^(L + 1)
+    scaled_q_powded = scaled_q**(n/(n+1))
+    M = round(one_half_factor * n_n_constant * scaled_q_powded)
     
-    svp_basis_matrix_B_primed.append(last_row)
+    #second version for svp basis
+    one_half_factor = (1/2)
+    n_n_constant = ((n+1) / (2 * math.pi * math.e))
+    scaled_q = cvp_basis_B[0][0] #upper left element; q * 2^(L + 1)
+    scaled_q_powded = scaled_q**(n/(n+1))
+    M = round(one_half_factor * n_n_constant * scaled_q_powded)
+    
+    
+    last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
+    last_row.append(M) #right lower element of basis for svp
+    
+    svp_basis_matrix_B_primed.append(last_row) #basis for svp done
     
     return svp_basis_matrix_B_primed #(list of lists)
     
@@ -280,8 +299,9 @@ def solve_svp(svp_basis_B):
     #In the task pdf, it is stated "should output a lattice basis containing the solution vector f"
     #https://www.math.auckland.ac.nz/~sgal018/crypto-book/ch18.pdf; this source suggest to reduce svp_basis_B via LLL as a first step
     #https://martinralbrecht.wordpress.com/2016/04/03/fpylll/ svp usage
-    #Question 8: Suggested by paper above
-    #Question 9: From lecture slides and exercise, norm(f) <= sqrt(n + 1) * 2**(N - L - 1) #TODO
+    #Question 8: Suggested by paper above; also see observation below
+    #Question 9: From lecture slides and exercise, norm(f) <= sqrt(n + 1) * 2**(N - L - 1); using suggestion from qustion 10, no, I think?#TODO
+    #Question 10: Yes, see below
 #    raise NotImplementedError()
     #https://github.com/fplll/fplll/blob/master/fplll/svpcvp.cpp
     B = LLL.reduction(svp_basis_B)
@@ -292,16 +312,17 @@ def solve_svp(svp_basis_B):
     #From slide 21: LLL often exactly solves SVP
     #Observe (through experimentation on cocalc): The first row of B and SVP.shortest_vector(svp_basis_B, method="fast", max_aux_solutions=0) yield the same vector; holds also for SVP.shortest_vector(svp_basis_B, method="proved", max_aux_solutions=0); Furthermore, the rows of B are sorted in a specific manner; norm increasing; the norm-wise greatest vector is the last row
     #idea: Use use rows of B as potential candidates
-    result = []
+    result = [] #use question 10
     for ele in B:
         result.append(list(ele))
-    return result #result[1:] potentially omit first vector; #list of lists;; alternatively return B and then adapt code appropriatly; via this way, can determine which rows to use
+    return result[1:] #return entire B (excl. first row) and then adapt code appropriatly; via this way, can determine which rows to use more flexibly
 
 def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"): #checked
     # Implement the "repeated nonces" cryptanalytic attack on ECDSA and EC-Schnorr using the in-built CVP-solver functions from the fpylll library
     # The function is partially implemented for you. Note that it invokes some of the functions that you have already implemented
     list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q)
     cvp_basis_B, cvp_list_u = hnp_to_cvp(N, L, num_Samples, list_t, list_u, q) #(list of lists, list)
+    #Question 11: We get back x directly (thanks to scaling) by just reading out the last element
     #v_List = solve_cvp(cvp_basis_B, cvp_list_u) #original version
     v_List = solve_cvp(IntegerMatrix.from_matrix(cvp_basis_B), cvp_list_u) #have to use this (instead of list of lists)
     # The function should recover the secret signing key x from the output of the CVP solver and return it
@@ -323,13 +344,26 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q)
     cvp_basis_B, cvp_list_u = hnp_to_cvp(N, L, num_Samples, list_t, list_u, q)
     svp_basis_B = cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u)
+    #Questions 9 and 10 above; use questions hints and possible answer to solve this.
 #    list_of_f_List = solve_svp(svp_basis_B) #originally
     list_of_f_List = solve_svp(IntegerMatrix.from_matrix(svp_basis_B))
     # The function should recover the secret signing key x from the output of the SVP solver and return it
-    #which element to extract from list_of_f_List?
-    raise NotImplementedError()
-
-
+    #which element to extract from list_of_f_List?  By question 10, (and construction), use the first one.
+    f_n_m = list_of_f_List[0]
+    #from slides
+    f = f_n_m[:-1]
+    v = cvp_list_u - f
+    x = v[-1] #last element is x
+#    b = check_x(Q, x)
+    b = check_x(Q, x % q)
+    if b:
+        print(Q, end=" ")
+        print("success!")
+    else:
+        print(Q, end=" ")
+        print("failure")
+    return x % q
+#    raise NotImplementedError()
 
 # testing code: do not modify
 
