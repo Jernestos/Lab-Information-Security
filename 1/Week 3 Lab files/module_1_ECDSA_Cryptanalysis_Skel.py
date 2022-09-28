@@ -232,9 +232,13 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
     #Question 7: Since we scale the elements of the basis matrix, there is no need to scale M, I think.
         
     #use slide 34 of week 3
-    svp_basis_matrix_B_primed = copy.deepcopy(cvp_basis_B) #recall: entries scaled by factor = 2**(L + 1) in hnp_to_cvp
-    for row in svp_basis_matrix_B_primed:
-        row.append(0) #one extra column full of zeroes, appended to the right-side of matrix
+    #too slow?
+#    svp_basis_matrix_B_primed = copy.deepcopy(cvp_basis_B) #recall: entries scaled by factor = 2**(L + 1) in hnp_to_cvp
+#    for row in svp_basis_matrix_B_primed:
+#        row.append(0) #one extra column full of zeroes, appended to the right-side of matrix
+    
+    for row in cvp_basis_B:
+        row.append(0)
     
     #What we need: M being an integer - either by scaling or round up/down; scaling with correct factor too difficult to find (limited by machine precision) -> just round up/down.
     #From slides:
@@ -260,13 +264,17 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
     scaled_q_powded = scaled_q**(n/(n+1))
     M = round(one_half_factor * n_n_constant * scaled_q_powded)
     
+    #too slow?
+#    last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
+#    last_row.append(M) #right lower element of basis for svp
     
-    last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
-    last_row.append(M) #right lower element of basis for svp
+    cvp_list_u.append(M)
+    cvp_basis_B.append(cvp_list_u)
+    return cvp_basis_B
     
-    svp_basis_matrix_B_primed.append(last_row) #basis for svp done
+    #svp_basis_matrix_B_primed.append(last_row) #basis for svp done
     
-    return svp_basis_matrix_B_primed #(list of lists)
+#    return svp_basis_matrix_B_primed #(list of lists)
     
 
 def solve_cvp(cvp_basis_B, cvp_list_u):
