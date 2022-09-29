@@ -8,6 +8,7 @@ from fpylll import SVP
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+import copy
 
 #copy paste egcd, mod_inv and bits_to_int (modified) from module_1_ECC_ECDSA, prewritten code
 # Euclidean algorithm for gcd computation
@@ -156,16 +157,18 @@ def hnp_to_cvp(N, L, num_Samples, list_t, list_u, q):
         temp_row[i] = q_x_factor
         B_cvp_matrix.append(temp_row)
     
+    t_list = copy.deepcopy(list_t)
     for i in range(num_Samples):
-        list_t[i] *= factor
-    list_t.append(1)
-    B_cvp_matrix.append(list_t)
+        t_list[i] *= factor
+    t_list.append(1)
+    B_cvp_matrix.append(t_list)
 
+    u_list = copy.deepcopy(list_u)
     for i in range(num_Samples):
-        list_u[i] *= factor
-    list_u.append(0)
+        u_list[i] *= factor
+    u_list.append(0)
 
-    return (B_cvp_matrix, list_u)
+    return (B_cvp_matrix, u_list)
 
 
 def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
@@ -175,21 +178,23 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     # The function should use the Kannan embedding technique to output the corresponding SVP basis matrix B' of apropriate dimensions.
     # The SVP basis matrix B' should again be implemented as a nested list
     n = num_Samples
-    for row in cvp_basis_B:
+    cvp_basis_B_ = copy.deepcopy(cvp_basis_B)
+    for row in cvp_basis_B_:
         row.append(0)
 
     #Gaussian heuristic slide 18
     #Kannan's embedding technique slide 34 (uses 1/2 as additional factor)
     one_half_factor = (1/2)
     n_n_constant = ((n+1) / (2 * math.pi * math.e))**(1/2)
-    scaled_q = cvp_basis_B[0][0] 
+    scaled_q = cvp_basis_B_[0][0] 
 
     scaled_q_powded = scaled_q**(n/(n+1))
     M = round(one_half_factor * n_n_constant * scaled_q_powded)
 
-    cvp_list_u.append(M)
-    cvp_basis_B.append(cvp_list_u)
-    return cvp_basis_B
+    cvp_list_u_ = copy.deepcopy(cvp_list_u)
+    cvp_list_u_.append(M)
+    cvp_basis_B_.append(cvp_list_u_)
+    return cvp_basis_B_
 
 
 def solve_cvp(cvp_basis_B, cvp_list_u):
@@ -223,9 +228,15 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     # The function is partially implemented for you. Note that it invokes some of the functions that you have already implemented
     list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q)
     cvp_basis_B, cvp_list_u = hnp_to_cvp(N, L, num_Samples, list_t, list_u, q)
-    v_List = solve_cvp(cvp_basis_B, cvp_list_u)
+    
+    fpylll_cvp_basis_B = IntegerMatrix.from_matrix(cvp_basis_B)
+    C = LLL.reduction(fpylll_cvp_basis_B)
+    cvp_solution_v = list(CVP.closest_vector(C, cvp_list_u, method="fast"))
+    return cvp_solution_v[-1] % q
+    
+    #v_List = solve_cvp(cvp_basis_B, cvp_list_u)
     # The function should recover the secret signing key x from the output of the CVP solver and return it
-    return v_List[-1] % q
+    #return v_List[-1] % q
 
 def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"):
     # Implement the "repeated nonces" cryptanalytic attack on ECDSA and EC-Schnorr using the in-built CVP-solver functions from the fpylll library
