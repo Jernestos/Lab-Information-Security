@@ -249,13 +249,13 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
         
     #use slide 34 of week 3
     #too slow?
-    svp_basis_matrix_B_primed = copy.deepcopy(cvp_basis_B) #recall: entries scaled by factor = 2**(L + 1) in hnp_to_cvp
-    for row in svp_basis_matrix_B_primed:
-        row.append(0) #one extra column full of zeroes, appended to the right-side of matrix
-    
+#    svp_basis_matrix_B_primed = copy.deepcopy(cvp_basis_B) #recall: entries scaled by factor = 2**(L + 1) in hnp_to_cvp
+#    for row in svp_basis_matrix_B_primed:
+#        row.append(0) #one extra column full of zeroes, appended to the right-side of matrix
+#    
     #reference issues - need original matrix?
-#    for row in cvp_basis_B:
-#        row.append(0)
+    for row in cvp_basis_B:
+        row.append(0)
     
     #What we need: M being an integer - either by scaling or round up/down; scaling with correct factor too difficult to find (limited by machine precision) -> just round up/down.
     #From slides:
@@ -266,33 +266,33 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
     #Then we can solve for M <= (1/2)^((n+2)/(n+1))*((n+2)/(2*pi*e))^(n+2/2) * (2^(L+1) * q)^(n/(n+1))
     #Another candidate is to consider L_cvp, and not L_svp for a potential M value.
     #Similar computation shows that M <= (1/2) * ((n+1)/(2*pi*e))^(1/2) * (2^(L+1) * q)^(n/(n+1))
-    #this work on cocalc
+    #Untested version
     n = num_Samples
     #first version for svp basis
-    one_half_factor = (1/2)**((n+2) / (n+1))
-    n_n_constant = ((n+2) / (2 * math.pi * math.e))**((n+2)/2)
-    scaled_q = cvp_basis_B[0][0] #upper left element; q * 2^(L + 1)
-    scaled_q_powded = scaled_q**(n/(n+1))
-    M = round(one_half_factor * n_n_constant * scaled_q_powded)
-    
-#    #this works on cocalc as well
-#    #second version for svp basis
-#    one_half_factor = (1/2)
-#    n_n_constant = ((n+1) / (2 * math.pi * math.e))
+#    one_half_factor = (1/2)**((n+2) / (n+1))
+#    n_n_constant = ((n+2) / (2 * math.pi * math.e))**((n+2)/2)
 #    scaled_q = cvp_basis_B[0][0] #upper left element; q * 2^(L + 1)
 #    scaled_q_powded = scaled_q**(n/(n+1))
 #    M = round(one_half_factor * n_n_constant * scaled_q_powded)
     
+    #this works on cocalc as well
+    #second version for svp basis
+    one_half_factor = (1/2)
+    n_n_constant = ((n+1) / (2 * math.pi * math.e))
+    scaled_q = cvp_basis_B[0][0] #upper left element; q * 2^(L + 1)
+    scaled_q_powded = scaled_q**(n/(n+1))
+    M = round(one_half_factor * n_n_constant * scaled_q_powded)
+    
     #too slow?
-    last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
-    last_row.append(M) #right lower element of basis for svp
-    svp_basis_matrix_B_primed.append(last_row) #basis for svp done
-    return svp_basis_matrix_B_primed #(list of lists)
+#    last_row = copy.deepcopy(cvp_list_u) #construct last row of B_primed
+#    last_row.append(M) #right lower element of basis for svp
+#    svp_basis_matrix_B_primed.append(last_row) #basis for svp done
+#    return svp_basis_matrix_B_primed #(list of lists)
     
     #reference issues - need original matrix?
-#    cvp_list_u.append(M)
-#    cvp_basis_B.append(cvp_list_u)
-#    return cvp_basis_B
+    cvp_list_u.append(M)
+    cvp_basis_B.append(cvp_list_u)
+    return cvp_basis_B
 
 def solve_cvp(cvp_basis_B, cvp_list_u):
     # Implement a function that takes as input an instance of CVP and solves it using in-built CVP-solver functions from the fpylll library

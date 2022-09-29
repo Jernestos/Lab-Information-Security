@@ -227,9 +227,9 @@ def Sign_FixedNonce(params, k, x, msg):
     # Write a function that takes as input an ECDSA_Params object, a fixed nonce k, a signing key x, and a message msg, and outputs a signature (r, s)
 #    raise NotImplementedError()
     #sanity check for some inputs; not necessary
+    q = params.q
     if not (1 <= k and k <= params.q - 1):
         raise RuntimeError("Invalid k")
-    q = params.q
     h = bits_to_int(hash_message_to_bits(msg), q)
     P_primed = params.P.scalar_multiply(k)
     r = P_primed.x % q
