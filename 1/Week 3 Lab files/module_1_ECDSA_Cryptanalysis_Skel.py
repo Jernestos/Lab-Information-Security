@@ -103,7 +103,7 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = MSB_to_Padded_Int(N, L, list_k_MSB) 
         u = (a - z) % q #mod q???
         #slide 24
-        if not (u < int(u/2)):
+        if not (u < round(u/2)):
             u -= q
         # if u > int(q/2)-1:
         #     u -= q
@@ -122,7 +122,7 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = LSB_to_Int(list_k_MSB)
         u = ((a - s_inv * h) * two_pow_L_inv) % q #here use mod q for u because of s_inv
         #slide 24
-        if not (u < int(u/2)):
+        if not (u < round(u/2)):
             u -= q
         # if u > int(q/2)-1:
         #     u -= q
@@ -136,11 +136,11 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         #we get hx = a * 2^(N-L) + 2^(N - L - 1) -s + e
         #        tx = u + e
         u = (MSB_to_Padded_Int(N, L, list_k_MSB) - s) % q#mod q?
+        #slide 24
+        if not (u < round(u/2)):
+            u -= q
         t = h
         #r = h; the signature algorithm for schnor does not contain r
-        #slide 24
-        if not (u < int(u/2)):
-            u -= q
         # if u > int(q/2)-1:
         #     u -= q
         return (t, u)
@@ -154,13 +154,12 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         #Hope that 2^L has inverse in mod q
 
         #r = h; the signature algorithm for schnor does not contain r
-
         two_pow_L_inv = mod_inv(2**L, q)
         a = LSB_to_Int(list_k_MSB)
         t = (h * two_pow_L_inv) % q
         u = ((a - s) * two_pow_L_inv) % q
         #slide 24
-        if not (u < int(u/2)):
+        if not (u < round(u/2)):
             u -= q
         # if u > int(q/2)-1:
         #     u -= q
@@ -349,7 +348,7 @@ def solve_svp(svp_basis_B):
     shortest_vector_candidates = []
     for row in fpylll_svp_basis_B:
         shortest_vector_candidates.append(list(row))
-    return shortest_vector_candidates #return all candidates
+    return shortest_vector_candidates[1:] #return all candidates but the first
     #raise NotImplementedError()
     #https://github.com/fplll/fplll/blob/master/fplll/svpcvp.cpp
     
@@ -372,7 +371,14 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     
     v_List = solve_cvp(cvp_basis_B, cvp_list_u)
     # The function should recover the secret signing key x from the output of the CVP solver and return it
-    return v_List[-1] % q
+    x = v_List[-1] % q
+    if check_x(x, Q):
+        print("Correct x")
+    else:
+        print("Incorrect x")
+        raise RuntimeError("recover_x_partial_nonce_CVP: Wrong x") 
+    return x
+    # return v_List[-1] % q
 
 def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"):
     # Implement the "repeated nonces" cryptanalytic attack on ECDSA and EC-Schnorr using the in-built CVP-solver functions from the fpylll library
@@ -382,20 +388,17 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     svp_basis_B = cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u)
     list_of_f_List = solve_svp(svp_basis_B)
     # The function should recover the secret signing key x from the output of the SVP solver and return it
-    f_m = list_of_f_List[1] #second element, a list
-    f = f_m[:-1] #remove the element M
-    x = cvp_list_u[-1] - f[-1]
-    return x % q
-    # f = list_of_f_List[1]
-    # if len(list(f))-2 != num_Samples:
-    #     f = list_of_f_List[0]
-    # #v = list(map(lambda a, b: a - b, cvp_list_u, f))
-    # #print(list_of_f_List)
-    # i = len(f)-2
-    # # Q11: bc CVP is already scaled, what do you expect? --> similar to directly doing CVP we get x directly back
-    # x = (cvp_list_u[i]-f[i])%q
-    # return x
+    #f = list_of_f_List[0][:-1] #second element, a list, remove the element M
+    # x = cvp_list_u[-1] - f[-1]
+    # return x % q
 
+    x = -list_of_f_List[0][:-1][-1] % q #second row of svp lll reduced basis, truncuate to last element (exlcuding M) and extract x (-x to be precise), mod q
+    if check_x(x, Q):
+        print("Correct x")
+    else:
+        print("Incorrect x")
+        raise RuntimeError("recover_x_partial_nonce_CVP: Wrong x") 
+    return x
     #for non-deep copy approach
     # u = cvp_list_u[:-1] #modified cvp_list_u in cvp_to_svp; remove M
     # x = u[-1] - f[-1]
