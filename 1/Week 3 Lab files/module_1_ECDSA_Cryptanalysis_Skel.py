@@ -257,7 +257,8 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     scaled_q = cvp_basis_B_[0][0] 
 
     scaled_q_powded = scaled_q**(n/(n+1))
-    M = round(one_half_factor * n_n_constant * scaled_q_powded)
+    M = round(n_n_constant * scaled_q_powded)
+    #M = round(one_half_factor * n_n_constant * scaled_q_powded)
 
     cvp_list_u_ = copy.deepcopy(cvp_list_u) #make deep copy to prevent issues with references
     cvp_list_u_.append(M) #add right most lower element M to matrix
