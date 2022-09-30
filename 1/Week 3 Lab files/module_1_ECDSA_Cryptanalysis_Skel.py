@@ -352,14 +352,14 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q)
     cvp_basis_B, cvp_list_u = hnp_to_cvp(N, L, num_Samples, list_t, list_u, q)
     
-    fpylll_cvp_basis_B = IntegerMatrix.from_matrix(cvp_basis_B)
-    C = LLL.reduction(fpylll_cvp_basis_B)
-    cvp_solution_v = list(CVP.closest_vector(C, cvp_list_u, method="fast"))
-    return cvp_solution_v[-1] % q
+    # fpylll_cvp_basis_B = IntegerMatrix.from_matrix(cvp_basis_B)
+    # C = LLL.reduction(fpylll_cvp_basis_B)
+    # cvp_solution_v = list(CVP.closest_vector(C, cvp_list_u, method="fast"))
+    # return cvp_solution_v[-1] % q
     
-    #v_List = solve_cvp(cvp_basis_B, cvp_list_u)
+    v_List = solve_cvp(cvp_basis_B, cvp_list_u)
     # The function should recover the secret signing key x from the output of the CVP solver and return it
-    #return v_List[-1] % q
+    return v_List[-1] % q
 
 def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"):
     # Implement the "repeated nonces" cryptanalytic attack on ECDSA and EC-Schnorr using the in-built CVP-solver functions from the fpylll library
