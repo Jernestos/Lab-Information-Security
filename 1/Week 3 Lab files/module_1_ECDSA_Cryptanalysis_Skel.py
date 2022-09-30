@@ -34,16 +34,16 @@ def mod_inv(a, p):
 # No modulo q
 #problem is here
 def bits_to_int(h_as_bits): #TODO read the bits in reverse? Should be okay, it's a copy paste from the week 2 module
-    bitstring = ''.join(map(str, h_as_bits))
-    bitstring = "0b" + bitstring
-    return int(bitstring, 2)
+    # bitstring = ''.join(map(str, h_as_bits))
+    # bitstring = "0b" + bitstring
+    # return int(bitstring, 2)
     #the approach below does not work at all - somehow it prevents cvp.closest_vector from terminating/slows it down extremly
-    # val = 0
-    # for i in range(len(h_as_bits)):
-    #     val = val * 2
-    #     if(h_as_bits[i] == '1'):
-    #         val = val + 1
-    # return val
+    val = 0
+    for i in range(len(h_as_bits)):
+        val = val * 2
+        if(h_as_bits[i] == '1'):
+            val = val + 1
+    return val
 
 def check_x(x, Q):
     """ Given a guess for the secret key x and a public key Q = [x]P,
