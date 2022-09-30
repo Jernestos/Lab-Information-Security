@@ -268,7 +268,7 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     #M = round(n_n_constant * scaled_q_powded)
     #M = round(one_half_factor * n_n_constant * scaled_q_powded)
     
-    q = cvp_basis_B[0, 0]
+    q = cvp_basis_B[0][0]
     power = num_Samples/(num_Samples+1)
     M = int(q**power*(1/num_Samples+1)/math.sqrt(2*math.pi*math.e))
 
