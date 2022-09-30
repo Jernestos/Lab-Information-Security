@@ -272,7 +272,7 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     # power = num_Samples/(num_Samples+1)
     # M = int(q**power*(1/num_Samples+1)/math.sqrt(2*math.pi*math.e))
 
-    M = round(scaled_q_powded * math.sqrt(((n+1) / (2 * math.pi * math.e))))
+    M = round(scaled_q_powded * math.sqrt(((0+1) / (2 * math.pi * math.e)))) * n
 
     #M = 2**N #int(pow(2, (N-1))*pow((1+n),0.5))  #int(pow((n+1),0.5)*pow(2, (N-L-1))*pow(2, (L+1)))
     #M = 2**N works
