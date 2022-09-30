@@ -8,7 +8,7 @@ from fpylll import SVP
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
-import copy
+import copy #part of standard library
 
 #copy paste egcd, mod_inv and bits_to_int (modified) from module_1_ECC_ECDSA, prewritten code
 # Euclidean algorithm for gcd computation
@@ -349,7 +349,7 @@ def solve_svp(svp_basis_B):
 def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"):
     # Implement the "repeated nonces" cryptanalytic attack on ECDSA and EC-Schnorr using the in-built CVP-solver functions from the fpylll library
     # The function is partially implemented for you. Note that it invokes some of the functions that you have already implemented
-    list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q)
+    list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits, algorithm)
     cvp_basis_B, cvp_list_u = hnp_to_cvp(N, L, num_Samples, list_t, list_u, q)
     
     # fpylll_cvp_basis_B = IntegerMatrix.from_matrix(cvp_basis_B)
@@ -364,16 +364,20 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
 def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits="msbs", algorithm="ecdsa"):
     # Implement the "repeated nonces" cryptanalytic attack on ECDSA and EC-Schnorr using the in-built CVP-solver functions from the fpylll library
     # The function is partially implemented for you. Note that it invokes some of the functions that you have already implemented
-    list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q)
+    list_t, list_u = setup_hnp_all_samples(N, L, num_Samples, listoflists_k_MSB, list_h, list_r, list_s, q, givenbits, algorithm)
     cvp_basis_B, cvp_list_u = hnp_to_cvp(N, L, num_Samples, list_t, list_u, q)
     svp_basis_B = cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u)
     list_of_f_List = solve_svp(svp_basis_B)
     # The function should recover the secret signing key x from the output of the SVP solver and return it
     f_m = list_of_f_List[1] #second element, a list
     f = f_m[:-1] #remove the element M
-    u = cvp_list_u[:-1] #modified cvp_list_u in cvp_to_svp; remove M
-    x = u[-1] - f[-1]
+    x = cvp_list_u[-1] - f[-1]
     return x % q
+
+    #for non-deep copy approach
+    # u = cvp_list_u[:-1] #modified cvp_list_u in cvp_to_svp; remove M
+    # x = u[-1] - f[-1]
+    # return x % q
 
 
 
