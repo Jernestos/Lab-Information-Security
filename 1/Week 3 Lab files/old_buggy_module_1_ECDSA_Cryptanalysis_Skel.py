@@ -363,7 +363,6 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u): #TODO
 #    #Then we can solve for M <= (1/2)^((n+2)/(n+1))*((n+2)/(2*pi*e))^(n+2/2) * (2^(L+1) * q)^(n/(n+1))
 #    #Another candidate is to consider L_cvp, and not L_svp for a potential M value.
 #    #Similar computation shows that M <= (1/2) * ((n+1)/(2*pi*e))^(1/2) * (2^(L+1) * q)^(n/(n+1))
-    
 #    #Untested version
 #    n = num_Samples
     #first version for svp basis
