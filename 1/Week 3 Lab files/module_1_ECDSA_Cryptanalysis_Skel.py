@@ -261,11 +261,11 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     #Kannan's embedding technique slide 34 (uses 1/2 as additional factor)
     one_half_factor = (1/2)
     n_n_constant = ((n+1) / (2 * math.pi * math.e))**(1/2)
-    scaled_q = cvp_basis_B_[0][0] 
+    scaled_q = cvp_basis_B_[0][0]
 
     scaled_q_powded = scaled_q**(n/(n+1))
     #M = round(n_n_constant * scaled_q_powded)
-    M = round(n_n_constant * scaled_q_powded)
+    M = round(n_n_constant * scaled_q_powded * (1/num_Samples+1))
     
     # q = cvp_basis_B[0][0]
     # power = num_Samples/(num_Samples+1)
