@@ -275,7 +275,10 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     #M = 2**N #int(pow(2, (N-1))*pow((1+n),0.5))  #int(pow((n+1),0.5)*pow(2, (N-L-1))*pow(2, (L+1)))
     #M = 2**N works
 
-    M = scaled_q // 2**(L + 1)
+    #works
+    #M = scaled_q // 2**(L + 1)
+
+    M = round(((n + 1)**(0.5)) * (2**N))
 
     #does not work
     #first version for svp basis
