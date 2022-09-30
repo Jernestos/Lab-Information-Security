@@ -6,4 +6,5 @@ chmod 755 ./Information-Security-Lab/Load_ISL.sh
 mv ./Information-Security-Lab/Load_ISL.sh ~/Desktop
 echo "Cloning terminated"
 echo "Start test"
-python3.9 Information-Security-Lab/1/Week\ 3\ Lab\ files/module_1_ECDSA_Cryptanalysis_Skel.py
+cd Information-Security-Lab/1/Week\ 3\ Lab\ files/
+python3.9 module_1_ECDSA_Cryptanalysis_Skel.py
