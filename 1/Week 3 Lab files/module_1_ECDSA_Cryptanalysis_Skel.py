@@ -103,7 +103,9 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = MSB_to_Padded_Int(N, L, list_k_MSB) 
         u = (a - z) % q #mod q???
         #slide 24
-        if not (u < int(u/2)):
+        # if not (u < int(u/2)):
+        #     u -= q
+        if u > int(q/2)-1:
             u -= q
         return (t, u)
     elif algorithm == "ecdsa" and givenbits == "lsbs":
@@ -120,7 +122,9 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = LSB_to_Int(list_k_MSB)
         u = ((a - s_inv * h) * two_pow_L_inv) % q #here use mod q for u because of s_inv
         #slide 24
-        if not (u < int(u/2)):
+        # if not (u < int(u/2)):
+        #     u -= q
+        if u > int(q/2)-1:
             u -= q
         return (t, u)
     elif algorithm == "ecschnorr" and givenbits == "msbs":
@@ -135,7 +139,9 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         t = h
         #r = h; the signature algorithm for schnor does not contain r
         #slide 24
-        if not (u < int(u/2)):
+        # if not (u < int(u/2)):
+        #     u -= q
+        if u > int(q/2)-1:
             u -= q
         return (t, u)
     elif algorithm == "ecschnorr" and givenbits == "lsbs":
@@ -154,7 +160,9 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         t = (h * two_pow_L_inv) % q
         u = ((a - s) * two_pow_L_inv) % q
         #slide 24
-        if not (u < int(u/2)):
+        # if not (u < int(u/2)):
+        #     u -= q
+        if u > int(q/2)-1:
             u -= q
         return (t, u)
     else:
@@ -257,8 +265,8 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     scaled_q = cvp_basis_B_[0][0] 
 
     scaled_q_powded = scaled_q**(n/(n+1))
-    M = round(n_n_constant * scaled_q_powded)
-    #M = round(one_half_factor * n_n_constant * scaled_q_powded)
+    #M = round(n_n_constant * scaled_q_powded)
+    M = round(one_half_factor * n_n_constant * scaled_q_powded)
 
     cvp_list_u_ = copy.deepcopy(cvp_list_u) #make deep copy to prevent issues with references
     cvp_list_u_.append(M) #add right most lower element M to matrix
