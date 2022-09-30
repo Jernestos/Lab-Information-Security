@@ -103,8 +103,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = MSB_to_Padded_Int(N, L, list_k_MSB) 
         u = (a - z) % q #mod q???
         #slide 24
-        if not (u < int(u/2)):
-            u -= q
+        if u > int(q/2)-1:
+            u = u - q
         return (t, u)
     elif algorithm == "ecdsa" and givenbits == "lsbs":
         #from equation (1) (see module pdf): isolate k, substitute k with the form involving a_head and e; isolate e and bring everything that has not x as factor to the same side as e.
@@ -135,8 +135,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         t = h
         #r = h; the signature algorithm for schnor does not contain r
         #slide 24
-        if not (u < int(u/2)):
-            u -= q
+        if u > int(q/2)-1:
+            u = u - q
         return (t, u)
     elif algorithm == "ecschnorr" and givenbits == "lsbs":
         #nearly same procedure as in the ecdsa, lsbs case
