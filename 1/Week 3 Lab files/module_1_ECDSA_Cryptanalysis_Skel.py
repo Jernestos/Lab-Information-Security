@@ -281,7 +281,7 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     #doesn't work
     # M = round(((n + 1)**(0.5)) * (2**N))
 
-    M = round(q/2)
+    M = round((scaled_q // 2**(L + 1))/2)
 
     #does not work
     #first version for svp basis
