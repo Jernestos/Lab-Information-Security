@@ -373,7 +373,8 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     # The function should recover the secret signing key x from the output of the CVP solver and return it
     x = v_List[-1] % q
     if check_x(x, Q):
-        print("Correct x")
+        # print("Correct x") #spams console
+        pass
     else:
         print("Incorrect x")
         raise RuntimeError("recover_x_partial_nonce_CVP: Wrong x") 
@@ -394,7 +395,8 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
 
     x = -list_of_f_List[0][:-1][-1] % q #second row of svp lll reduced basis, truncuate to last element (exlcuding M) and extract x (-x to be precise), mod q
     if check_x(x, Q):
-        print("Correct x")
+        # print("Correct x") #spams console
+        pass
     else:
         print("Incorrect x")
         raise RuntimeError("recover_x_partial_nonce_CVP: Wrong x") 
