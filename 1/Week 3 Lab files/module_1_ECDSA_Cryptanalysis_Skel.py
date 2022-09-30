@@ -103,10 +103,10 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = MSB_to_Padded_Int(N, L, list_k_MSB) 
         u = (a - z) % q #mod q???
         #slide 24
-        # if not (u < int(u/2)):
-        #     u -= q
-        if u > int(q/2)-1:
+        if not (u < int(u/2)):
             u -= q
+        # if u > int(q/2)-1:
+        #     u -= q
         return (t, u)
     elif algorithm == "ecdsa" and givenbits == "lsbs":
         #from equation (1) (see module pdf): isolate k, substitute k with the form involving a_head and e; isolate e and bring everything that has not x as factor to the same side as e.
@@ -122,10 +122,10 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = LSB_to_Int(list_k_MSB)
         u = ((a - s_inv * h) * two_pow_L_inv) % q #here use mod q for u because of s_inv
         #slide 24
-        # if not (u < int(u/2)):
-        #     u -= q
-        if u > int(q/2)-1:
+        if not (u < int(u/2)):
             u -= q
+        # if u > int(q/2)-1:
+        #     u -= q
         return (t, u)
     elif algorithm == "ecschnorr" and givenbits == "msbs":
         # In the case of EC-Schnorr, r may be set to h
@@ -139,10 +139,10 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         t = h
         #r = h; the signature algorithm for schnor does not contain r
         #slide 24
-        # if not (u < int(u/2)):
-        #     u -= q
-        if u > int(q/2)-1:
+        if not (u < int(u/2)):
             u -= q
+        # if u > int(q/2)-1:
+        #     u -= q
         return (t, u)
     elif algorithm == "ecschnorr" and givenbits == "lsbs":
         #nearly same procedure as in the ecdsa, lsbs case
@@ -160,10 +160,10 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         t = (h * two_pow_L_inv) % q
         u = ((a - s) * two_pow_L_inv) % q
         #slide 24
-        # if not (u < int(u/2)):
-        #     u -= q
-        if u > int(q/2)-1:
+        if not (u < int(u/2)):
             u -= q
+        # if u > int(q/2)-1:
+        #     u -= q
         return (t, u)
     else:
         raise RuntimeError("setup_hnp_single_sample: Invalid choice of algorithm and/or givenbits")
@@ -382,19 +382,19 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     svp_basis_B = cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u)
     list_of_f_List = solve_svp(svp_basis_B)
     # The function should recover the secret signing key x from the output of the SVP solver and return it
-    # f_m = list_of_f_List[1] #second element, a list
-    # f = f_m[:-1] #remove the element M
-    # x = cvp_list_u[-1] - f[-1]
-    # return x % q
-    f = list_of_f_List[1]
-    if len(list(f))-2 != num_Samples:
-        f = list_of_f_List[0]
-    #v = list(map(lambda a, b: a - b, cvp_list_u, f))
-    #print(list_of_f_List)
-    i = len(f)-2
-    # Q11: bc CVP is already scaled, what do you expect? --> similar to directly doing CVP we get x directly back
-    x = (cvp_list_u[i]-f[i])%q
-    return x
+    f_m = list_of_f_List[1] #second element, a list
+    f = f_m[:-1] #remove the element M
+    x = cvp_list_u[-1] - f[-1]
+    return x % q
+    # f = list_of_f_List[1]
+    # if len(list(f))-2 != num_Samples:
+    #     f = list_of_f_List[0]
+    # #v = list(map(lambda a, b: a - b, cvp_list_u, f))
+    # #print(list_of_f_List)
+    # i = len(f)-2
+    # # Q11: bc CVP is already scaled, what do you expect? --> similar to directly doing CVP we get x directly back
+    # x = (cvp_list_u[i]-f[i])%q
+    # return x
 
     #for non-deep copy approach
     # u = cvp_list_u[:-1] #modified cvp_list_u in cvp_to_svp; remove M
