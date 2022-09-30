@@ -265,11 +265,11 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
 
     scaled_q_powded = scaled_q**(n/(n+1))
     #M = round(n_n_constant * scaled_q_powded)
-    #M = round(one_half_factor * n_n_constant * scaled_q_powded)
+    M = round(one_half_factor * n_n_constant * scaled_q_powded)
     
-    q = cvp_basis_B[0][0]
-    power = num_Samples/(num_Samples+1)
-    M = int(q**power*(1/num_Samples+1)/math.sqrt(2*math.pi*math.e))
+    # q = cvp_basis_B[0][0]
+    # power = num_Samples/(num_Samples+1)
+    # M = int(q**power*(1/num_Samples+1)/math.sqrt(2*math.pi*math.e))
 
     cvp_list_u_ = copy.deepcopy(cvp_list_u) #make deep copy to prevent issues with references
     cvp_list_u_.append(M) #add right most lower element M to matrix
@@ -343,12 +343,17 @@ def solve_svp(svp_basis_B):
     #Question 8: Suggested by paper above; also see observation below
     #Question 9: From lecture slides and exercise, norm(f) <= sqrt(n + 1) * 2**(N - L - 1); using suggestion from qustion 10, no, I think?#TODO
     #Question 10: Yes, see below
+    #Observe (through experimentation on cocalc): The first row of B and SVP.shortest_vector(svp_basis_B, method="fast", max_aux_solutions=0) 
+    #yield the same vector; holds also for SVP.shortest_vector(svp_basis_B, method="proved", max_aux_solutions=0); 
+    #Furthermore, the rows of B are sorted in a specific manner; norm increasing; the norm-wise greatest vector is the last row
+    #idea: use LLL reduce svp_basis_B -> fpylll_svp_basis_B gives you rows
     fpylll_svp_basis_B = IntegerMatrix.from_matrix(svp_basis_B)
     LLL.reduction(fpylll_svp_basis_B)
     shortest_vector_candidates = []
     for row in fpylll_svp_basis_B:
         shortest_vector_candidates.append(list(row))
     return shortest_vector_candidates[1:] #return all candidates but the first
+    #can determine which rows to use more flexibly
     #raise NotImplementedError()
     #https://github.com/fplll/fplll/blob/master/fplll/svpcvp.cpp
     
@@ -371,6 +376,7 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     
     v_List = solve_cvp(cvp_basis_B, cvp_list_u)
     # The function should recover the secret signing key x from the output of the CVP solver and return it
+    #Question 11: We get back x directly (thanks to scaling by 2^(L+1)) by just reading out the last element
     x = v_List[-1] % q
     if check_x(x, Q):
         # print("Correct x") #spams console
@@ -388,11 +394,13 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     cvp_basis_B, cvp_list_u = hnp_to_cvp(N, L, num_Samples, list_t, list_u, q)
     svp_basis_B = cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u)
     list_of_f_List = solve_svp(svp_basis_B)
+    #Questions 9 and 10 above; use questions hints and possible answer to solve this.
     # The function should recover the secret signing key x from the output of the SVP solver and return it
     #f = list_of_f_List[0][:-1] #second element, a list, remove the element M
     # x = cvp_list_u[-1] - f[-1]
     # return x % q
-
+    #from slides: u - f; then take last element as x
+    #from slides what we do is 0 - (-x) (for element in question)
     x = -list_of_f_List[0][:-1][-1] % q #second row of svp lll reduced basis, truncuate to last element (exlcuding M) and extract x (-x to be precise), mod q
     if check_x(x, Q):
         # print("Correct x") #spams console
