@@ -107,8 +107,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = MSB_to_Padded_Int(N, L, list_k_MSB) 
         u = (a - z) % q #mod q???
         #slide 24
-        if not (u < round(q/2)):
-            u -= q
+        # if not (u < round(q/2)):
+        #     u -= q
         return (t, u)
     elif algorithm == "ecdsa" and givenbits == "lsbs":
         #from equation (1) (see module pdf): isolate k, substitute k with the form involving a_head and e; isolate e and bring everything that has not x as factor to the same side as e.
@@ -124,8 +124,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = LSB_to_Int(list_k_MSB)
         u = ((a - s_inv * h) * two_pow_L_inv) % q #here use mod q for u because of s_inv
         #slide 24
-        if not (u < round(q/2)):
-            u -= q
+        # if not (u < round(q/2)):
+        #     u -= q
         return (t, u)
     elif algorithm == "ecschnorr" and givenbits == "msbs":
         # In the case of EC-Schnorr, r may be set to h
@@ -137,8 +137,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         #        tx = u + e
         u = (MSB_to_Padded_Int(N, L, list_k_MSB) - s) % q#mod q?
         #slide 24
-        if not (u < round(q/2)):
-            u -= q
+        # if not (u < round(q/2)):
+        #     u -= q
         t = h
         #r = h; the signature algorithm for schnor does not contain r
         return (t, u)
@@ -157,8 +157,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         t = (h * two_pow_L_inv) % q
         u = ((a - s) * two_pow_L_inv) % q
         #slide 24
-        if not (u < round(q/2)):
-            u -= q
+        # if not (u < round(q/2)):
+        #     u -= q
         return (t, u)
     else:
         raise RuntimeError("setup_hnp_single_sample: Invalid choice of algorithm and/or givenbits")
