@@ -36,8 +36,10 @@ def mod_inv(a, p):
 def bits_to_int(h_as_bits): #TODO read the bits in reverse? Should be okay, it's a copy paste from the week 2 module
     # binary_string = "".join([str(i) for i in list_k_LSB])
     # a = int(binary_string, 2)
-    bitstring = ''.join(map(str, h_as_bits))
-    bitstring = "0b" + bitstring
+    bitseq = []
+    for b in h_as_bits:
+        bitseq.append(str(b))
+    bitstring = "0b" + "".join(bitseq)
     return int(bitstring, 2)
     #the approach below does not work at all - somehow it prevents cvp.closest_vector from terminating/slows it down extremly
     # val = 0
@@ -274,7 +276,7 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     # n_constant = round(n / two_pi_e)**(1 / 2)
     # M = round(n_constant * (scaled_q / 2))
 
-    M = scaled_q // 2**(L+1)
+    M = scaled_q // 2**(L+1) #M = q
     
     #this works too
     # q = cvp_basis_B[0][0]
