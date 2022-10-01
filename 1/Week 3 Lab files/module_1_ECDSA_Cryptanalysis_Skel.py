@@ -278,6 +278,10 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
 
     M = round(one_half_factor * constant_n * q_x_two_pow_L_1)
 
+    two_pi_e = 2 * math.pi * math.e
+    n_constant = round(n / two_pi_e)**(1 / 2)
+    M = round(n_constant * (scaled_q / 2))
+
     #M = scaled_q // 2**(L+1)
     
     #this works too
