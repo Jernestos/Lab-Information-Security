@@ -34,6 +34,8 @@ def mod_inv(a, p):
 # No modulo q
 #problem is here
 def bits_to_int(h_as_bits): #TODO read the bits in reverse? Should be okay, it's a copy paste from the week 2 module
+    # binary_string = "".join([str(i) for i in list_k_LSB])
+    # a = int(binary_string, 2)
     bitstring = ''.join(map(str, h_as_bits))
     bitstring = "0b" + bitstring
     return int(bitstring, 2)
@@ -103,9 +105,7 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = MSB_to_Padded_Int(N, L, list_k_MSB) 
         u = (a - z) % q #mod q???
         #slide 24
-        if not (u < round(u/2)):
-            u -= q
-        # if u > int(q/2)-1:
+        # if not (u < round(u/2)):
         #     u -= q
         return (t, u)
     elif algorithm == "ecdsa" and givenbits == "lsbs":
@@ -122,9 +122,7 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = LSB_to_Int(list_k_MSB)
         u = ((a - s_inv * h) * two_pow_L_inv) % q #here use mod q for u because of s_inv
         #slide 24
-        if not (u < round(u/2)):
-            u -= q
-        # if u > int(q/2)-1:
+        # if not (u < round(u/2)):
         #     u -= q
         return (t, u)
     elif algorithm == "ecschnorr" and givenbits == "msbs":
@@ -137,12 +135,10 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         #        tx = u + e
         u = (MSB_to_Padded_Int(N, L, list_k_MSB) - s) % q#mod q?
         #slide 24
-        if not (u < round(u/2)):
-            u -= q
+        # if not (u < round(u/2)):
+        #     u -= q
         t = h
         #r = h; the signature algorithm for schnor does not contain r
-        # if u > int(q/2)-1:
-        #     u -= q
         return (t, u)
     elif algorithm == "ecschnorr" and givenbits == "lsbs":
         #nearly same procedure as in the ecdsa, lsbs case
@@ -159,9 +155,7 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         t = (h * two_pow_L_inv) % q
         u = ((a - s) * two_pow_L_inv) % q
         #slide 24
-        if not (u < round(u/2)):
-            u -= q
-        # if u > int(q/2)-1:
+        # if not (u < round(u/2)):
         #     u -= q
         return (t, u)
     else:
@@ -269,19 +263,18 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
 
     #Use M = (1/2) lambda; lambda = sqrt((n+1)/(2*pi*e)) * del(L)**(1/n+1); del(L) = M*(q*2**(L+1))**n
     #solve for M
-
-    exponent = ((n + 1) / n)
-    one_half_factor = (1 / 2)**exponent
-    constant_n = ((n + 1) / (2 * math.pi * math.e))**((n + 1) / 2 * n)
-    scaled_q = cvp_basis_B_[0][0]
-
-    M = round(one_half_factor * constant_n * scaled_q)
+    #doesn't work
+    # exponent = ((n + 1) / n)
+    # one_half_factor = (1 / 2)**exponent
+    # constant_n = ((n + 1) / (2 * math.pi * math.e))**((n + 1) / 2 * n)
+    # scaled_q = cvp_basis_B_[0][0]
+    # M = round(one_half_factor * constant_n * scaled_q)
 
     # two_pi_e = 2 * math.pi * math.e
     # n_constant = round(n / two_pi_e)**(1 / 2)
     # M = round(n_constant * (scaled_q / 2))
 
-    #M = scaled_q // 2**(L+1)
+    M = scaled_q // 2**(L+1)
     
     #this works too
     # q = cvp_basis_B[0][0]
