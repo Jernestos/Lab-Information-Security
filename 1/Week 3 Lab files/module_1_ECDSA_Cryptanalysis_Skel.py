@@ -276,7 +276,7 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     scaled_q = cvp_basis_B_[0][0]
     q_x_two_pow_L_1 = scaled_q**exponent
 
-    M = one_half_factor * constant_n * q_x_two_pow_L_1
+    M = round(one_half_factor * constant_n * q_x_two_pow_L_1)
 
     #M = scaled_q // 2**(L+1)
     
