@@ -266,16 +266,30 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     scaled_q_powded = scaled_q**(n/(n+1))
     #M = round(n_n_constant * scaled_q_powded)
     #M = round(one_half_factor * n_n_constant * scaled_q_powded)
+
+    #Use M = (1/2) lambda; lambda = sqrt((n+1)/(2*pi*e)) * del(L)**(1/n+1); del(L) = M*(q*2**(L+1))**n
+    #solve for M
+
+    exponent = ((n + 1) / n)
+    one_half_factor = (1 / 2)**exponent
+    constant_n = (((n + 1) / (2 * math.pi * math.e))**(1 / 2))**exponent
+    scaled_q = cvp_basis_B_[0][0]
+    q_x_two_pow_L_1 = scaled_q**exponent
+
+    M = one_half_factor * constant_n * q_x_two_pow_L_1
+
+    #M = scaled_q // 2**(L+1)
     
     #this works too
     # q = cvp_basis_B[0][0]
     # power = num_Samples/(num_Samples+1)
     # M = int(q**power*(1/num_Samples+1)/math.sqrt(2*math.pi*math.e))
 
-    power = num_Samples/(num_Samples+1) # because the num_Samples is the qs and then we have the 1
-    det_power_over_n = scaled_q**power#+1
-    constant = ((num_Samples+1)/2*math.pi*math.e)**(1/2)
-    M = int(2/constant*det_power_over_n)**num_Samples # calculated M for when lamb_1/2 = M
+    #doesn't work
+    # power = num_Samples/(num_Samples+1) # because the num_Samples is the qs and then we have the 1
+    # det_power_over_n = scaled_q**power#+1
+    # constant = ((num_Samples+1)/2*math.pi*math.e)**(1/2)
+    # M = int(2/constant*det_power_over_n)**num_Samples # calculated M for when lamb_1/2 = M
 
     #doesn't work
     # one_half_factor = (1/2)**((n+2)/(n+1))
