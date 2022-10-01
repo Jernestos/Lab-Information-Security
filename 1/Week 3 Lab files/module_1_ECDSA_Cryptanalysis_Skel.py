@@ -107,8 +107,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = MSB_to_Padded_Int(N, L, list_k_MSB) 
         u = (a - z) % q #mod q???
         #slide 24
-        # if not (u < round(u/2)):
-        #     u -= q
+        if not (u < round(q/2)):
+            u -= q
         return (t, u)
     elif algorithm == "ecdsa" and givenbits == "lsbs":
         #from equation (1) (see module pdf): isolate k, substitute k with the form involving a_head and e; isolate e and bring everything that has not x as factor to the same side as e.
@@ -124,8 +124,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         a = LSB_to_Int(list_k_MSB)
         u = ((a - s_inv * h) * two_pow_L_inv) % q #here use mod q for u because of s_inv
         #slide 24
-        # if not (u < round(u/2)):
-        #     u -= q
+        if not (u < round(q/2)):
+            u -= q
         return (t, u)
     elif algorithm == "ecschnorr" and givenbits == "msbs":
         # In the case of EC-Schnorr, r may be set to h
@@ -137,8 +137,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         #        tx = u + e
         u = (MSB_to_Padded_Int(N, L, list_k_MSB) - s) % q#mod q?
         #slide 24
-        # if not (u < round(u/2)):
-        #     u -= q
+        if not (u < round(q/2)):
+            u -= q
         t = h
         #r = h; the signature algorithm for schnor does not contain r
         return (t, u)
@@ -157,8 +157,8 @@ def setup_hnp_single_sample(N, L, list_k_MSB, h, r, s, q, givenbits="msbs", algo
         t = (h * two_pow_L_inv) % q
         u = ((a - s) * two_pow_L_inv) % q
         #slide 24
-        # if not (u < round(u/2)):
-        #     u -= q
+        if not (u < round(q/2)):
+            u -= q
         return (t, u)
     else:
         raise RuntimeError("setup_hnp_single_sample: Invalid choice of algorithm and/or givenbits")
@@ -272,11 +272,10 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     # scaled_q = cvp_basis_B_[0][0]
     # M = round(one_half_factor * constant_n * scaled_q)
 
-    # two_pi_e = 2 * math.pi * math.e
-    # n_constant = round(n / two_pi_e)**(1 / 2)
-    # M = round(n_constant * (scaled_q / 2))
-
+    #this works
     M = scaled_q // 2**(L+1) #M = q
+
+    #M = 2**N works too
     
     #this works too
     # q = cvp_basis_B[0][0]
@@ -295,23 +294,11 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     # scaled_q = cvp_basis_B_[0][0]
     # scaled_q_powded = scaled_q**(n/(n+1))
 
-    # M = round(one_half_factor * n_n_constant * scaled_q_powded)
-
-    #M = round(scaled_q_powded * math.sqrt(((0+1) / (2 * math.pi * math.e))) * (1/n+1))
-
-    #M = 2**N #int(pow(2, (N-1))*pow((1+n),0.5))  #int(pow((n+1),0.5)*pow(2, (N-L-1))*pow(2, (L+1)))
-    #M = 2**N works
-
-    #works
-    #M = scaled_q // 2**(L + 1)
-
     #doesn't work
     # M = round(((n + 1)**(0.5)) * (2**N))
 
     #doesn't work
     #M = round((scaled_q // 2**(L + 1))/2)
-
-
 
     #does not work
     #first version for svp basis
