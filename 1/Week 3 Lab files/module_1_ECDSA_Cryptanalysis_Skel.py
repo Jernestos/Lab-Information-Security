@@ -273,7 +273,7 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     # M = int(q**power*(1/num_Samples+1)/math.sqrt(2*math.pi*math.e))
 
     power = num_Samples/(num_Samples+1) # because the num_Samples is the qs and then we have the 1
-    det_power_over_n = cvp_basis_B[0, 0]**power#+1
+    det_power_over_n = scaled_q**power#+1
     constant = ((num_Samples+1)/2*math.pi*math.e)**(1/2)
     M = int(2/constant*det_power_over_n)**num_Samples # calculated M for when lamb_1/2 = M
 
