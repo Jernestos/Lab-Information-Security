@@ -334,14 +334,6 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
 #    scaled_q_powded = scaled_q**(n/(n+1))
 #    M = round(one_half_factor * n_n_constant * scaled_q_powded)
     
-#    #this works on cocalc as well
-#    #second version for svp basis
-#    one_half_factor = (1/2)
-#    n_n_constant = ((n+1) / (2 * math.pi * math.e))
-#    scaled_q = cvp_basis_B[0][0] #upper left element; q * 2^(L + 1)
-#    scaled_q_powded = scaled_q**(n/(n+1))
-#    M = round(one_half_factor * n_n_constant * scaled_q_powded)
-
 def solve_cvp(cvp_basis_B, cvp_list_u):
     # Implement a function that takes as input an instance of CVP and solves it using in-built CVP-solver functions from the fpylll library
     # The function is given as input a CVP basis matrix B and the CVP target vector u

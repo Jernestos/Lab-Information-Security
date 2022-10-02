@@ -131,7 +131,7 @@ class Point(object):
         # Write a function that negates a Point object and returns the resulting Point object
         # Ths is an optional extension and is not evaluated
 #        raise NotImplementedError()
-        return Point(self.curve, self.x, -self.y % self.p) #from slides
+        return Point(self.curve, self.x, (-self.y) % self.p) #from slides
 
     def double(self): #checked
         # Write a function that doubles a Point object and returns the resulting Point object
@@ -185,8 +185,10 @@ class Point(object):
         if not isinstance(scalar, int): # (python3 does not have long) or (isinstance(scalar, long):
             raise TypeError("Scalar has not type int")
         #could check if point in question is the point at infinity but this is a class specifically not for this point
-        if scalar == 0 or scalar == self.curve.q: #by definition
+        if (scalar % self.curve.q) == 0:
             return PointInf(self.curve)
+#        if scalar == 0 or scalar == self.curve.q: #by definition
+#            return PointInf(self.curve)
         s = scalar % self.curve.q #module q because cyclic group of order q, assuming we are dealing here with a generator base point of order q, that lies on EC
         #from slides
         result = PointInf(self.curve)
@@ -228,7 +230,7 @@ def Sign_FixedNonce(params, k, x, msg):
 #    raise NotImplementedError()
     #sanity check for some inputs; not necessary
     q = params.q
-    if not (1 <= k and k <= params.q - 1):
+    if not (1 <= k and k <= q - 1):
         raise RuntimeError("Invalid k")
     h = bits_to_int(hash_message_to_bits(msg), q)
     P_primed = params.P.scalar_multiply(k)
@@ -244,10 +246,10 @@ def Sign(params, x, msg):
 #    raise NotImplementedError()
     q = params.q
     while True: #from module slides
-        k = random.randint(1, params.q - 1)
+        k = random.randint(1, q - 1)
         h = bits_to_int(hash_message_to_bits(msg), q)
         P_primed = params.P.scalar_multiply(k)
-        r = P_primed.x % params.q
+        r = P_primed.x % q
         s = ((h + x * r) * mod_inv(k, q)) % q
         if (r != 0) and (s != 0):
             return (r, s)
@@ -265,7 +267,7 @@ def Verify(params, Q, msg, r, s):
     u1 = w * h % q
     u2 = w * r % q
     Z = params.P.scalar_multiply(u1).add(Q.scalar_multiply(u2))
-    if (r == Z.x % q):
+    if r == (Z.x % q):
         return 1
     return 0
 
