@@ -273,9 +273,9 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
     # M = round(one_half_factor * constant_n * scaled_q)
 
     #this works
-    M = scaled_q // 2**(L+1) #M = q
+    #M = scaled_q // 2**(L+1) #M = q
 
-    #M = 2**N works too
+    M = 2**N #works too
     
     #this works too
     # q = cvp_basis_B[0][0]

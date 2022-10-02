@@ -42,9 +42,9 @@ We will supply you with a basic skeleton which you should use for submission. Th
 - `pebble.minica.pem`
 This is the CA certificate for the private key used to sign the certificate of the HTTPS endpoint of the ACME server itself. Use this as a trust root to check the ACME server's certificate when interacting with this endpoint. You will lose points if your application sends more than one request to an ACME server with an invalid certificate (one request is needed to obtain the certificate and check its validity).
 - `compile`
-This file will be executed by the automated-testing environment before any tests are run. You should modify this file. If your project needs to be compiled, this file should contain the commands needed to compile the project. If no compilation is needed, this file can do nothing (or install dependencies). Note that you are only allowed to install explicitly allowed dependencies, see [below](#guidelines).
+This file will be executed by the automated-testing environment before any tests are run. __You should modify this file.__ If your project needs to be compiled, this file should contain the commands needed to compile the project. If no compilation is needed, this file can do nothing (or install dependencies). Note that you are only allowed to install explicitly allowed dependencies, see [below](#guidelines).
 - `run`
-This file will be executed by the testing environment when the tests are being run. You should modify this file. It will receive the command-line arguments listed in [Section 3.3.2](#arguments). Your `compile` script may overwrite this file.
+This file will be executed by the testing environment when the tests are being run. __You should modify this file.__ It will receive the command-line arguments listed in [Section 3.3.2](#arguments). Your `compile` script may overwrite this file.
 
 Note that all paths in your code should be relative to the root of the repository.
 
@@ -84,10 +84,11 @@ Your application should be running the following services on the following ports
    - we can run it in our automated testing environment,
    - it does not implement core ACME functionality, and
    - it does not implement JSON Object Signing and Encryption (JOSE) functionality.
-  
-   You can direct request for extensions of the whitelist by opening a [Gitlab issue](https://gitlab.inf.ethz.ch/PRV-PERRIG/netsec-course/netsec-2022-issues).
-
-- Your application may spawn other processes. However, the entire application must start solely by executing the `run` file.
+    
+   
+You can direct request for extensions of the whitelist by opening a [Gitlab issue](https://gitlab.inf.ethz.ch/PRV-PERRIG/netsec-course/netsec-2022-issues).
+   
+- __Your application may spawn other processes. However, the entire application must start solely by executing the `run` file.__
 - You can use any key type and key size supported by openSSL and Pebble for the requested certificate.
 
 ## 5 | Testing
@@ -101,7 +102,7 @@ You should submit your code by pushing it to a personal repository we have set u
  ```
  https://gitlab.inf.ethz.ch/PRV-PERRIG/netsec-course/project-acme/netsec-2022-acme/<YOUR_ETH_USERNAME>-acme-project
  ```
- 
+
 This repository has continuous integration (CI) set up and will automatically test your submission. Note that a green checkmark in the gitlab CI only indicates that the test runner terminated successfully, **not** that your code actually passed the tests.
 To obtain your test results, you need to inspect the output of the runner `give-score`.
 
