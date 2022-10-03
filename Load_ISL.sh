@@ -8,4 +8,4 @@ mv ./Information-Security-Lab/Load_ISL.sh ~/Desktop
 echo "Cloning terminated"
 echo "Start test"
 cd Information-Security-Lab/1/Week\ 3\ Lab\ files/
-python3.9 module_1_ECDSA_Cryptanalysis_Skel.py
+python3.9 module_1_ECDSA_Cryptanalysis.py
