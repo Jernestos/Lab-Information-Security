@@ -7,5 +7,5 @@ rm Load_ISL.sh
 mv ./Information-Security-Lab/Load_ISL.sh ~/Desktop
 echo "Cloning terminated"
 echo "Start test"
-cd ../Week\ 3\ Lab\ files/
+cd $HOME/Desktop/Information-Security-Lab/1/Week\ 3\ Lab\ files/
 python3.9 module_1_ECDSA_Cryptanalysis.py
