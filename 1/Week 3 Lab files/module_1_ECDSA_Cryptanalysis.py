@@ -407,12 +407,12 @@ def recover_x_partial_nonce_CVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     # The function should recover the secret signing key x from the output of the CVP solver and return it
     #Question 11: We get back x directly (thanks to scaling by 2^(L+1)) by just reading out the last element
     x = v_List[-1] % q
-    if check_x(x, Q):
-        # print("Correct x") #spams console
-        pass
-    else:
-        print("Incorrect x")
-        raise RuntimeError("recover_x_partial_nonce_CVP: Wrong x") 
+#    if check_x(x, Q):
+#        # print("Correct x") #spams console
+#        pass
+#    else:
+#        print("Incorrect x")
+#        raise RuntimeError("recover_x_partial_nonce_CVP: Wrong x") 
     return x
     # return v_List[-1] % q
 
@@ -431,12 +431,12 @@ def recover_x_partial_nonce_SVP(Q, N, L, num_Samples, listoflists_k_MSB, list_h,
     #from slides: u - f; then take last element as x
     #from slides what we do is 0 - (-x) (for element in question)
     x = -list_of_f_List[0][:-1][-1] % q #second row of svp lll reduced basis, truncuate to last element (exlcuding M) and extract x (-x to be precise), mod q
-    if check_x(x, Q):
-        # print("Correct x") #spams console
-        pass
-    else:
-        print("Incorrect x")
-        raise RuntimeError("recover_x_partial_nonce_CVP: Wrong x") 
+#    if check_x(x, Q):
+#        # print("Correct x") #spams console
+#        pass
+#    else:
+#        print("Incorrect x")
+#        raise RuntimeError("recover_x_partial_nonce_CVP: Wrong x") 
     return x
     #for non-deep copy approach
     # u = cvp_list_u[:-1] #modified cvp_list_u in cvp_to_svp; remove M
