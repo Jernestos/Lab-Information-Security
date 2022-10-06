@@ -278,9 +278,9 @@ def cvp_to_svp(N, L, num_Samples, cvp_basis_B, cvp_list_u):
 #    M = 2**N #works too
     
     #this works too
-     q = cvp_basis_B[0][0]
-     power = num_Samples/(num_Samples+1)
-     M = int(q**power*(1/num_Samples+1)/math.sqrt(2*math.pi*math.e))
+    q = cvp_basis_B[0][0]
+    power = num_Samples/(num_Samples+1)
+    M = int(q**power*(1/num_Samples+1)/math.sqrt(2*math.pi*math.e))
 
     #doesn't work
     # power = num_Samples/(num_Samples+1) # because the num_Samples is the qs and then we have the 1
