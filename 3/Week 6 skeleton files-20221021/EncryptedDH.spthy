@@ -56,7 +56,7 @@ rule Init_2:
        kI = gy^~xI
    in
       [Init_1($A, ~xI, gxI, $B), !Pk($B, pkB), In(<b, enc_gy_hash_gx>), !Key($A, skA)]
-      --[_restrict(equality(hash_gx, h(gxI))), FinishedR($A), SecretR(b, $A, kI)]->
+      --[equality(hash_gx, h(gxI)), FinishedR($A), SecretR(b, $A, kI)]->
       [Init_2($A, ~xI, gxI, $B, gy, hash_gx, kI), Out(<$A, aenc(h(gy), pkB)>)]
 
 
@@ -66,7 +66,7 @@ rule Resp_2:
        kR = gy^~yR
    in    
       [Resp_1($B, ~yR, gyR, $A, gx), In(<a, enc_hash_gy>), !Key($B, skB)]
-      --[(equality(hash_gy, h(gyR))), FinishedR($B), SecretR(a, $B, kR)]->
+      --[equality(hash_gy, h(gyR)), FinishedR($B), SecretR(a, $B, kR)]->
       [Resp_2($B, ~yR, gyR, $A, gx, hash_gy, kR)]
 
 /* ---------- */
