@@ -51,7 +51,7 @@ rule Resp_1:
 
 
 rule Init_2:
-   let <gy, hash_gx> = adec(enc_gy_hash_gx, skA) 
+   let gy, hash_gx = adec(enc_gy_hash_gx, skA) 
        kI = gy^~xI
    in
       [Init_1($A, ~xI, gxI, $B), !Pk($B, pkB), In(<b, enc_gy_hash_gx>), !Key($A, skA)]
