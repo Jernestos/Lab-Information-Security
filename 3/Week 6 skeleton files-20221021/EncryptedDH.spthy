@@ -52,7 +52,7 @@ rule Resp_1:
        enc_tuple = aenc(tuple, pkA)
    in
       [In(<a, enc_gx>), !Pk($A, pkA), !Key($B, kB), Fr(~yR)]
-      --[RunningR(a, $B, kR)]->
+      --[RunningR($A, $B, kR)]->
       [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), Out(<$B, enc_tuple>)]
 
 
@@ -65,15 +65,15 @@ rule Init_2:
        enc_hash_gy = aenc(hash_dec_gy, pkB)
    in
       [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), In(<b, enc_tuple>)]
-      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, b, kI), RunningI($A, b, kI), CommitI($A, b, kI)]->
-      [Init_2(<$A, ka, ~xI, gxI>, <$B, pkB>, dec_gy, kI), Out(<$A, enc_hash_gy>)]
+      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, b, kI)]->
+      [Init_2(<$A, kA, ~xI, gxI>, <$B, pkB>, dec_gy, kI), Out(<$A, enc_hash_gy>)]
 
 
 
 rule Resp_2:
    let dec_hash_gy = adec(enc_hash_gy, kB) in    
       [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), In(<a, enc_hash_gy>)]
-      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR(a, $B, kR), CommitR($B, a, kR)]->
+      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR($A, $B, kR), CommitR($B, $A, kR)]->
       [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR)]
 
 /* ---------- */
