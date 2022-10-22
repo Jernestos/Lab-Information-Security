@@ -57,7 +57,7 @@ rule Resp_1:
        enc_triplet = aenc(triplet, pkA)
    in
       [In(enc_tuple), !Pk($A, pkA), !Key($B, kB), Fr(~yR)]
-      --[RunningR($B, $A, kR)]->
+      --[RunningR($B, $A, kR), Eq(dec_id_i, $A)]->
       [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_id_i, dec_gx, kR), Out(enc_triplet)]
 
 
