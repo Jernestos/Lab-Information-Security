@@ -52,7 +52,7 @@ rule Resp_1:
        enc_tuple = aenc(tuple, pka)
    in
       [In(<a, enc_gx>), !Pk(a, pka), !Key($B, ~kB), Fr(~yR)]
-      -->
+      --[RunningR(a, $B, kR)]->
       [Resp_1($B, ~yR, gyR, dec_gx, kR), Out(<$B, enc_tuple>)]
 
 
@@ -65,7 +65,7 @@ rule Init_2:
        enc_hash_gy = aenc(hash_dec_gy, pkb)
    in
       [Init_1($A, ~xI, gxI), !Pk(b, pkb), In(<b, enc_tuple>), !Key($A, ~kA)]
-      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, b, kI)]->
+      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, b, kI), RunningA($A, b, kI), CommitI($A, b, kI)]->
       [Init_2($A, ~xI, gxI, dec_gy, kI), Out(<$A, enc_hash_gy>)]
 
 
@@ -73,7 +73,7 @@ rule Init_2:
 rule Resp_2:
    let dec_hash_gy = adec(enc_hash_gy, ~kB) in    
       [Resp_1($B, ~yR, gyR, gx, kR), In(<a, enc_hash_gy>), !Key($B, ~kB)]
-      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR(a, $B, kR)]->
+      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR(a, $B, kR), CommitR($B, a, kR)]->
       [Resp_2($B, ~yR, gyR, gx, kR)]
 
 /* ---------- */
@@ -81,6 +81,7 @@ rule Resp_2:
 /* ---------- */
 
 /* Question 2 here */
+/* Omit this attack and the we have key secrecy established */
 rule q2_attack:
    [!Key(A, k)]
    --[Compromised(A)]->
@@ -130,21 +131,20 @@ Please uncomment the following two lemmas for this question.
 */
 
 
-/*
+
 lemma agreementR:
 "All #i A B k.
   (CommitR( B, A, k) @ i &
    not ((Ex #l. Compromised(A) @ l) | (Ex #m. Compromised(B) @ m)))
    ==> (Ex #j. RunningI(A, B, k) @ j & j < i)"
-*/
 
-/*
+
 lemma agreementI:
 "All #i A B k.
   (CommitI(A, B, k) @ i &
    not ((Ex #l. Compromised(A) @ l) | (Ex #m. Compromised(B) @ m)))
    ==> (Ex #j. RunningR(B, A, k) @ j & j < i)"
-*/
+
 
 end
 
