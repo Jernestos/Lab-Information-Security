@@ -55,7 +55,7 @@ rule Init_2:
        hash_gx = snd(adec(enc_gy_hash_gx, skA))
        kI = gy^~xI
    in
-      [Init_1($A, ~xI, gxI), !Pk($B, pkB), In(<b, enc_gy_hash_gx>), !Key($A, skA)]
+      [Init_1($A, ~xI, gxI), !Pk($A, pkA), In(<b, enc_gy_hash_gx>), !Key($A, skA)]
       --[Eq(hash_gx, h(gxI)), FinishedI($A), SecretI($A, b, kI)]->
       [Init_2($A, ~xI, gxI, gy, hash_gx, kI), Out(<$A, aenc(h(gy), pkB)>)]
 
