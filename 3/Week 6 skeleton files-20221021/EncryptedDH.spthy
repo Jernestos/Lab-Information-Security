@@ -52,7 +52,7 @@ rule Resp_1:
        enc_tuple = aenc(tuple, pka)
    in
       [In(<a, enc_gx>), !Pk(a, pka), !Key($B, ~kB), Fr(~yR)]
-      --[SecretR(a, $B, kR)]->
+      -->
       [Resp_1($B, ~yR, gyR, dec_gx, kR), Out(<$B, enc_tuple>)]
 
 
@@ -73,7 +73,7 @@ rule Init_2:
 rule Resp_2:
    let dec_hash_gy = adec(enc_hash_gy, ~kB) in    
       [Resp_1($B, ~yR, gyR, gx, kR), In(<a, enc_hash_gy>), !Key($B, ~kB)]
-      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B)]->
+      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR(a, $B, kR)]->
       [Resp_2($B, ~yR, gyR, gx, kR)]
 
 /* ---------- */
