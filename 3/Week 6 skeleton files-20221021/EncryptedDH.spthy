@@ -81,10 +81,7 @@ rule Resp_2:
 /* ---------- */
 
 /* Question 2 here */
-rule q2_attack:
-   [!Key($A, ~kA)]
-   --[Compromised($A)]->
-   [Out(<$A, ~kA>)]
+
 
 
 /* ---------- */
