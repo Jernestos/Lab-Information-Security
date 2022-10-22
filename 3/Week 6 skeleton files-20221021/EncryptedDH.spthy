@@ -45,9 +45,9 @@ rule Resp_1:
    let gyR = 'g'^~yR
        hash_gx = h(gx)
    in
-      [In(<a, gx>), !Pk($A, pkA), Fr(~yR)]
+      [In(<a, gx>), !Pk($B, pkB), Fr(~yR)]
       -->
-      [Resp_1($B, ~yR, gyR, gx, gyR), Out(<$B, aenc(<gyR, hash_gx>, pkA)>)]
+      [Resp_1($B, ~yR, gyR, gx, gyR), Out(<$B, aenc(<gyR, hash_gx>, pkB)>)]
 
 
 rule Init_2:
