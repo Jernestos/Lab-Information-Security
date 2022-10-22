@@ -63,7 +63,7 @@ rule Init_2:
 
 rule Resp_2:
    let hash_gy = adec(enc_hash_gy, skB)
-       kR = gy^~yR
+       kR = gx^~yR
    in    
       [Resp_1($B, ~yR, gyR, gx, gyR), In(<a, enc_hash_gy>), !Key($B, skB)]
       --[Eq(hash_gy, h(gyR)), FinishedR($B), SecretR(a, $B, kR)]->
