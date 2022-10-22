@@ -71,6 +71,7 @@ rule Init_2:
        hash_dec_gy = h(dec_gy)
        tuple = <$A, hash_dec_gy>
        enc_tuple = aenc(tuple, pk_dec_id_resp)
+       kI = dec_gy^~xI
    in
       [Init_1($A, ~xI, gxI), !Pk(dec_id_resp, pk_dec_id_resp), In(enc_triplet), !Key($A, ~kA)]
       --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, dec_id_resp, kI), RunningI($A, dec_id_resp, kI), CommitI($A, dec_id_resp, kI)]->
