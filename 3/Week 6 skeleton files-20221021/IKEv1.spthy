@@ -81,7 +81,7 @@ rule Init_2:
       HASH_B = snd(temp_tuple)
       dec_id_R = adec(enc_id_R, skA)
       dec_enc_NR = adec(enc_NR, skA)
-      skID = prf(<h(~NI, dec_enc_NR>), $A, $B>)
+      skID = prf(<h(<~NI, dec_enc_NR>), $A, $B>)
       HASH_A = prf(<skID, gxI, gy, $A, $B>)
       HASH_B_Check = prf(<skID, gy, gxI, $B, $A>)
       kI = prf(<skID, gy^~xI>)
