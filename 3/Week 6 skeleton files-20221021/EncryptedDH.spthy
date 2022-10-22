@@ -47,13 +47,13 @@ rule Resp_1:
    let dec_gx = adec(enc_gx, ~kB)
        hash_dec_gx = h(dec_gx)
        gyR = 'g'^~yR
-       kR = gx^~yR
+       kR = dec_gx^~yR
        tuple = <gyR, hash_dec_gx>
        enc_tuple = aenc(tuple, pka)
    in
       [In(<a, enc_gx>), !Pk(a, pka), !Key($B, ~kB), Fr(~yR)]
       --[SecretR(a, $B, kR)]->
-      [Resp_1($B, ~yR, gyR, gx, kR), Out(<$B, enc_tuple>)]
+      [Resp_1($B, ~yR, gyR, dec_gx, kR), Out(<$B, enc_tuple>)]
 
 
 rule Init_2:
