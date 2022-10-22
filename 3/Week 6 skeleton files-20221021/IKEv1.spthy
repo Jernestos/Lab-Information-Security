@@ -47,7 +47,7 @@ rule genkey:
 rule Init_1:
   let gxI = 'g'^~xI
       enc_id_A = aenc($A, pkB)
-      enc_NI_A = aenc(~NI)
+      enc_NI_A = aenc(~NI, pkB)
       triplet = <enc_id_A, enc_NI_A, gxI>
    in  
       [!Pk($B, pkB), !Key($A, kA), Fr(~NI), Fr(~xI)]
@@ -57,7 +57,7 @@ rule Init_1:
 rule Resp_1:
   let gyR = 'g'^~yR
       enc_id_B = aenc($B, pkA)
-      enc_NR_B = aenc(~NR)
+      enc_NR_B = aenc(~NR, pkB)
       enc_id_I = fst(triplet)
       temp_tuple = snd(triplet)
       enc_NI = fst(temp_tuple)
