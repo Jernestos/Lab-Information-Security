@@ -38,7 +38,7 @@ rule Init_1:
    let gxI = 'g'^~xI in  
       [!Pk($B, pkB), Fr(~xI)] /*A has A's public key and generates fresh x*/
       -->
-      [Init_1($A, ~xI, gxI, $B), Out(<$A, aenc(gxI, pkB)>)]
+      [Init_1($A, ~xI, gxI), Out(<$A, aenc(gxI, pkB)>)]
 
 
 rule Resp_1:
@@ -47,7 +47,7 @@ rule Resp_1:
    in
       [In(<a, gx>), !Pk($A, pkA), Fr(~yR)]
       -->
-      [Resp_1($B, ~yR, gyR, $A, gx), Out(<$B, aenc(<gyR, hash_gx>, pkA)>)]
+      [Resp_1($B, ~yR, gyR, gx, gyR), Out(<$B, aenc(<gyR, hash_gx>, pkA)>)]
 
 
 rule Init_2:
@@ -55,9 +55,9 @@ rule Init_2:
        hash_gx = snd(adec(enc_gy_hash_gx, skA))
        kI = gy^~xI
    in
-      [Init_1($A, ~xI, gxI, $B), !Pk($B, pkB), In(<b, enc_gy_hash_gx>), !Key($A, skA)]
+      [Init_1($A, ~xI, gxI), !Pk($B, pkB), In(<b, enc_gy_hash_gx>), !Key($A, skA)]
       --[Eq(hash_gx, h(gxI)), FinishedR($A), SecretR(b, $A, kI)]->
-      [Init_2($A, ~xI, gxI, $B, gy, hash_gx, kI), Out(<$A, aenc(h(gy), pkB)>)]
+      [Init_2($A, ~xI, gxI, gy, hash_gx, kI), Out(<$A, aenc(h(gy), pkB)>)]
 
 
 
@@ -65,9 +65,9 @@ rule Resp_2:
    let hash_gy = adec(enc_hash_gy, skB)
        kR = gy^~yR
    in    
-      [Resp_1($B, ~yR, gyR, $A, gx), In(<a, enc_hash_gy>), !Key($B, skB)]
+      [Resp_1($B, ~yR, gyR, gx, gyR), In(<a, enc_hash_gy>), !Key($B, skB)]
       --[Eq(hash_gy, h(gyR)), FinishedR($B), SecretR(a, $B, kR)]->
-      [Resp_2($B, ~yR, gyR, $A, gx, hash_gy, kR)]
+      [Resp_2($B, ~yR, gyR, gx, hash_gy, kR)]
 
 /* ---------- */
 /* Key Reveal */
