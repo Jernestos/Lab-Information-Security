@@ -53,7 +53,7 @@ rule Resp_1:
    in
       [In(<i, enc_gx>), !Pk($A, pkA), !Key($B, kB), Fr(~yR)]
       --[RunningR($B, $A, kR), Eq(i, $A)]->
-      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, i dec_gx, kR), Out(<$B, enc_tuple>)]
+      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, i, dec_gx, kR), Out(<$B, enc_tuple>)]
 
 
 rule Init_2:
