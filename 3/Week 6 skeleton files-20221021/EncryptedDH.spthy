@@ -82,9 +82,9 @@ rule Resp_2:
 
 /* Question 2 here */
 rule q2_attack:
-   [!Key(E, skE)]
-   --[Compromised(E)]->
-   [Out(<E, skE>)]
+   [!Key($A, ~kA)]
+   --[Compromised($A)]->
+   [Out(<$A, ~kA>)]
 
 
 /* ---------- */
