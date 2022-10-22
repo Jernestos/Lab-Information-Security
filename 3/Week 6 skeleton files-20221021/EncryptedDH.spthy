@@ -51,7 +51,7 @@ rule Resp_1:
        tuple = <gyR, hash_gx>
        enc_tuple = aenc(tuple, pkA)
    in
-      [In(<a, enc_gx>), !Pk($A, pkA), !Key($B, ~kB), Fr(~yR)]
+      [In(<$A, enc_gx>), !Pk($A, pkA), !Key($B, ~kB), Fr(~yR)]
       --[SecretR($A, $B, kR)]->
       [Resp_1($B, ~yR, gyR, gx, kR), Out(<$B, enc_tuple>)]
 
@@ -64,7 +64,7 @@ rule Init_2:
        kI = dec_gy^~xI
        enc_hash_gy = aenc(hash_gy, pkB)
    in
-      [Init_1($A, ~xI, gxI), !Pk($B, pkB), In(<b, enc_tuple>), !Key($A, ~kA)]
+      [Init_1($A, ~xI, gxI), !Pk($B, pkB), In(<$B, enc_tuple>), !Key($A, ~kA)]
       --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, $B, kI)]->
       [Init_2($A, ~xI, gxI, dec_gy, kI), Out(<$A, enc_hash_gy>)]
 
