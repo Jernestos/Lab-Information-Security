@@ -38,43 +38,43 @@ rule Init_1:
    let gxI = 'g'^~xI 
        enc_gxI = aenc(gxI, pkB)
    in  
-      [!Pk($B, pkB), Fr(~xI)]
+      [!Pk($B, pkB), !Key($A, kA), Fr(~xI)]
       -->
-      [Init_1($A, ~xI, gxI), Out(<$A, enc_gxI>)]
+      [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), Out(<$A, enc_gxI>)]
 
 
 rule Resp_1:
-   let dec_gx = adec(enc_gx, ~kB)
+   let dec_gx = adec(enc_gx, kB)
        hash_dec_gx = h(dec_gx)
        gyR = 'g'^~yR
        kR = dec_gx^~yR
        tuple = <gyR, hash_dec_gx>
-       enc_tuple = aenc(tuple, pka)
+       enc_tuple = aenc(tuple, pkA)
    in
-      [In(<a, enc_gx>), !Pk(a, pka), !Key($B, ~kB), Fr(~yR)]
+      [In(<a, enc_gx>), !Pk($A, pkA), !Key($B, kB), Fr(~yR)]
       --[RunningR(a, $B, kR)]->
-      [Resp_1($B, ~yR, gyR, dec_gx, kR), Out(<$B, enc_tuple>)]
+      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), Out(<$B, enc_tuple>)]
 
 
 rule Init_2:
-   let dec_tuple = adec(enc_tuple, ~kA)
+   let dec_tuple = adec(enc_tuple, kA)
        dec_gy = fst(dec_tuple)
        dec_hash_gx = snd(dec_tuple)
        hash_dec_gy = h(dec_gy)
        kI = dec_gy^~xI
-       enc_hash_gy = aenc(hash_dec_gy, pkb)
+       enc_hash_gy = aenc(hash_dec_gy, pkB)
    in
-      [Init_1($A, ~xI, gxI), !Pk(b, pkb), In(<b, enc_tuple>), !Key($A, ~kA)]
+      [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), In(<b, enc_tuple>)]
       --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, b, kI), RunningI($A, b, kI), CommitI($A, b, kI)]->
-      [Init_2($A, ~xI, gxI, dec_gy, kI), Out(<$A, enc_hash_gy>)]
+      [Init_2(<$A, ka, ~xI, gxI>, <$B, pkB>, dec_gy, kI), Out(<$A, enc_hash_gy>)]
 
 
 
 rule Resp_2:
-   let dec_hash_gy = adec(enc_hash_gy, ~kB) in    
-      [Resp_1($B, ~yR, gyR, gx, kR), In(<a, enc_hash_gy>), !Key($B, ~kB)]
+   let dec_hash_gy = adec(enc_hash_gy, kB) in    
+      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), In(<a, enc_hash_gy>)]
       --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR(a, $B, kR), CommitR($B, a, kR)]->
-      [Resp_2($B, ~yR, gyR, gx, kR)]
+      [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR)]
 
 /* ---------- */
 /* Key Reveal */
@@ -83,9 +83,9 @@ rule Resp_2:
 /* Question 2 here */
 /* Omit this attack and the we have key secrecy established */
 rule q2_attack:
-   [!Key(A, k)]
-   --[Compromised(A)]->
-   [Out(<A, k>)]
+   [!Key($X, k)]
+   --[Compromised($X)]->
+   [Out(k)]
 
 /* ---------- */
 /* Restrictions */

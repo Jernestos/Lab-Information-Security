@@ -57,7 +57,7 @@ rule Resp_1:
        triplet = <$B, gyR, hash_dec_gx>
        enc_triplet = aenc(triplet, pk_dec_id_init)
    in
-      [In(enc_tuple), !Pk(dec_id_init, pk_dec_id_init), !Key($B, ~kB), Fr(~yR)]
+      [In(enc_tuple), !Pk($dec_id_init, ~pk_dec_id_init), !Key($B, ~kB), Fr(~yR)]
       --[RunningR(dec_id_init, $B, kR)]->
       [Resp_1($B, ~yR, gyR, dec_gx, kR), Out(enc_triplet)]
 
@@ -94,9 +94,9 @@ rule Resp_2:
 /* ---------- */
 /* Omit this attack and the we have key secrecy established */
 rule q2_attack:
-   [!Key(A, k)]
-   --[Compromised(A)]->
-   [Out(<A, k>)]
+   [!Key($X, k)]
+   --[Compromised($X)]->
+   [Out(k)]
 
 
 
