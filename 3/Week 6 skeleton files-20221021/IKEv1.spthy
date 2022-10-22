@@ -44,8 +44,64 @@ rule genkey:
 /* Protocol rules */
 /*----------------*/
 
+rule Init_1:
+  let gxI = 'g'^~xI
+      enc_id_A = aenc($A, pkB)
+      enc_NI_A = aenc(~NI)
+      triplet = <enc_id_A, enc_NI_A, gxI>
+   in  
+      [!Pk($B, pkB), !Key($A, kA), Fr(~NI), Fr(~xI)]
+      -->
+      [Init_1(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB>), Out(triplet)]
 
+rule Resp_1:
+  let gyR = 'g'^~yR
+      enc_id_B = aenc($B, pkA)
+      enc_NR_B = aenc(~NR)
 
+      enc_id_I = fst(triplet)
+      temp_tuple = snd(triplet)
+      enc_NI = fst(temp_tuple)
+      gx = snd(temp_tuple)
+
+      dec_id_I = adec(enc_id_I, pkA)
+      dec_NI = adec(enc_NI, pkA)
+
+      skID = prf(<h(<dec_NI, ~NR>), $A, $B>)
+      HASH_B = prf(<skID, gyR, gx, $B, $A>)
+
+      quartet = <enc_id_B, enc_NR_B, gyR, HASH_B>
+  in
+  [In(triplet), !Pk($A, pkA), !Key($B, kB), Fr(~yR), Fr(~NR)]
+  --[RunningR($B, $A, kR), Eq(dec_id_I, $A)]->
+  [Resp_1(<$B, kB, ~yR, gyR, ~NR>, <$A, pkA, gx, dec_NI>, skID, HASH_B), Out(quartet)]
+
+rule Init_2:
+  let enc_id_R = fst(quartet)
+      temp_triplet = snd(quartet)
+      temp_tuple = snd(temp_triplet)
+      enc_NR = fst(temp_triplet)
+      gy = fst(temp_tuple)
+      HASH_B = snd(temp_tuple)
+
+      dec_id_R = adec(enc_id_R, skA)
+      dec_enc_NR = adec(enc_NR, skA)
+
+      skID = prf(<h(~NI, dec_enc_NR>), $A, $B>)
+      HASH_A = prf(<skID, gxI, gy, $A, $B>)
+  in
+  [Init_1(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB>), In(quartet)]
+  --[Eq(dec_hash_gx, h(gxI)), Eq(dec_id_R, $B), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
+  [Init_2(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB, gy, dec_NR>, skID, HASH_A), Out(HASH_A)]
+
+rule Resp_2:
+   let dec_tuple = adec(enc_tuple, kB)
+       dec_id_i = fst(dec_tuple)
+       dec_hash_gy = snd(dec_tuple)
+   in
+      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_id_i, dec_gx, kR), In(HASH_A)]
+      --[Eq(dec_hash_gy, h(gyR)), Eq(dec_id_i, $A), FinishedR($B), SecretR($A, $B, kR), CommitR($B, $A, kR)]->
+      [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_id_i, dec_gx, kR)]
 
 
 
@@ -53,7 +109,10 @@ rule genkey:
 /* ---------- */
 /* Key Reveal */
 /* ---------- */
-
+rule q2_attack:
+   [!Key($X, k)]
+   --[Compromised($X)]->
+   [Out(k)]
 
 
 

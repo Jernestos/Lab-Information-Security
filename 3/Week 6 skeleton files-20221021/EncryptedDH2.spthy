@@ -73,7 +73,7 @@ rule Init_2:
        enc_tuple = aenc(tuple, pkB)
    in
       [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), In(enc_triplet)]
-      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
+      --[Eq(dec_hash_gx, h(gxI)), Eq(dec_id_r, $B), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
       [Init_2(<$A, kA, ~xI, gxI>, <$B, pkB>, dec_id_r, dec_gy, kI), Out(enc_tuple)]
 
 
@@ -83,7 +83,7 @@ rule Resp_2:
        dec_hash_gy = snd(dec_tuple)
    in
       [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_id_i, dec_gx, kR), In(enc_tuple)]
-      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR($A, $B, kR), CommitR($B, $A, kR)]->
+      --[Eq(dec_hash_gy, h(gyR)), Eq(dec_id_i, $A), FinishedR($B), SecretR($A, $B, kR), CommitR($B, $A, kR)]->
       [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_id_i, dec_gx, kR)]
 
 
