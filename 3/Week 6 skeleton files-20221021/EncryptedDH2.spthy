@@ -11,6 +11,7 @@ begin
 /* Equational theory */
 /* ----------------- */
 
+
 /* Load the built-in Diffie-Hellman, asymmetric encryption and hashing equational theories */
 builtins: diffie-hellman, asymmetric-encryption, hashing
 
@@ -35,35 +36,66 @@ rule genkey:
 /*----------------*/
 
 
-/*
-
 rule Init_1:
-[]
---[]->
-[]
+   let 
+       gxI = 'g'^~xI 
+       tuple = <$A, gxI>
+       enc_tuple = aenc(tuple, pkB)
+   in  
+      [!Pk($B, pkB), Fr(~xI)]
+      -->
+      [Init_1($A, ~xI, gxI), Out(enc_tuple)]
+
 
 rule Resp_1:
-[]
---[]->
-[]
+   let dec_tuple = adec(enc_tuple, ~kB)
+       dec_id_init = fst(dec_tuple)
+       dec_gx = snd(dec_tuple)
+       hash_dec_gx = h(dec_gx)
+       gyR = 'g'^~yR
+       kR = dec_gx^~yR
+       triplet = <$B, gyR, hash_dec_gx>
+       enc_triplet = aenc(triplet, pk_dec_id_init)
+   in
+      [In(enc_tuple), !Pk(dec_id_init, pk_dec_id_init), !Key($B, ~kB), Fr(~yR)]
+      --[RunningR(dec_id_init, $B, kR)]->
+      [Resp_1($B, ~yR, gyR, dec_gx, kR), Out(enc_triplet)]
+
 
 rule Init_2:
-[]
---[]->
-[]
+   let dec_triplet = adec(enc_triplet, ~kA)
+       dec_id_resp = fst(enc_triplet)
+       dec_pair = snd(enc_triplet)
+       dec_gy = fst(dec_pair)
+       dec_hash_gx = snd(dec_pair)
+       hash_dec_gy = h(dec_gy)
+       tuple = <$A, hash_dec_gy>
+       enc_tuple = aenc(tuple, pk_dec_id_resp)
+   in
+      [Init_1($A, ~xI, gxI), !Pk(dec_id_resp, pk_dec_id_resp), In(enc_triplet), !Key($A, ~kA)]
+      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, dec_id_resp, kI), RunningI($A, dec_id_resp, kI), CommitI($A, dec_id_resp, kI)]->
+      [Init_2($A, ~xI, gxI, dec_gy, kI), Out(enc_tuple)]
+
+
 
 rule Resp_2:
-[]
---[]->
-[]
-
-*/
+   let dec_tuple = adec(enc_tuple, ~kB) 
+       dec_id_init = fst(dec_tuple)
+       dec_hash_gy = snd(dec_tuple)
+   in    
+      [Resp_1($B, ~yR, gyR, gx, kR), In(enc_tuple), !Key($B, ~kB)]
+      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR(dec_id_init, $B, kR), CommitR($B, dec_id_init, kR)]->
+      [Resp_2($B, ~yR, gyR, gx, kR)]
 
 
 /* ---------- */
 /* Key Reveal */
 /* ---------- */
-
+/* Omit this attack and the we have key secrecy established */
+rule q2_attack:
+   [!Key(A, k)]
+   --[Compromised(A)]->
+   [Out(<A, k>)]
 
 
 
