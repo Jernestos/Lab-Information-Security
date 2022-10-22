@@ -66,7 +66,7 @@ rule Resp_2:
        kR = gx^~yR
    in    
       [Resp_1($B, ~yR, gyR, gx, gyR), In(<a, enc_hash_gy>), !Key($B, skB)]
-      --[Eq(hash_gy, h(gyR)), FinishedR($B), SecretR($A, b, kR)]->
+      --[Eq(hash_gy, h(gyR)), FinishedR($B), SecretR(a, $B, kR)]->
       [Resp_2($B, ~yR, gyR, gx, hash_gy, kR)]
 
 /* ---------- */
