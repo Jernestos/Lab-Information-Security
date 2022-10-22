@@ -65,7 +65,7 @@ rule Init_2:
        enc_hash_gy = aenc(hash_dec_gy, pkb)
    in
       [Init_1($A, ~xI, gxI), !Pk(b, pkb), In(<b, enc_tuple>), !Key($A, ~kA)]
-      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, b, kI), RunningA($A, b, kI), CommitI($A, b, kI)]->
+      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, b, kI), RunningI($A, b, kI), CommitI($A, b, kI)]->
       [Init_2($A, ~xI, gxI, dec_gy, kI), Out(<$A, enc_hash_gy>)]
 
 
