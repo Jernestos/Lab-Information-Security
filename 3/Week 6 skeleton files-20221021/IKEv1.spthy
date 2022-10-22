@@ -165,8 +165,6 @@ lemma agreementI:
 Please uncomment the following two lemmas for this question.
 */
 
-
-
 lemma secrecy_PFS_R:
  " All A B k #i. 
     SecretR(A, B, k) @i &

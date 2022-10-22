@@ -70,6 +70,22 @@ lemma key_secrecyI:
 lemma key_secrecyR:
 "All #i A B k. (SecretR(A,B,k) @ i) ==> not (Ex #j. K(k) @ j)"
 
+/* Perfect Forward Secrecy:  (Question 8)
+Please uncomment the following two lemmas for this question.
+*/
+
+lemma secrecy_PFS_R:
+ " All A B k #i. 
+    SecretR(A, B, k) @i &
+      not ((Ex #l. (Compromised(A) @ l & l<i )) | (Ex #m. (Compromised(B) @ m & m < i)) )  
+    ==> not (Ex #j. K(k)@j )"
+
+lemma secrecy_PFS_I:
+ " All A B k #i. 
+    SecretI(A, B, k) @i &
+      not ((Ex #l. (Compromised(A) @ l & l<i )) | (Ex #m. (Compromised(B) @ m & m < i)) )  
+    ==> not (Ex #j. K(k)@j )"
+
 end
 
 

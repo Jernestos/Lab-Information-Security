@@ -128,20 +128,34 @@ lemma key_secrecyR:
 Please uncomment the following two lemmas for this question.
 */
 
-
-
 lemma agreementR:
 "All #i A B k.
   (CommitR( B, A, k) @ i &
    not ((Ex #l. Compromised(A) @ l) | (Ex #m. Compromised(B) @ m)))
    ==> (Ex #j. RunningI(A, B, k) @ j & j < i)"
 
-
 lemma agreementI:
 "All #i A B k.
   (CommitI(A, B, k) @ i &
    not ((Ex #l. Compromised(A) @ l) | (Ex #m. Compromised(B) @ m)))
    ==> (Ex #j. RunningR(B, A, k) @ j & j < i)"
+
+
+/* Perfect Forward Secrecy:  (Question 8)
+Please uncomment the following two lemmas for this question.
+*/
+
+lemma secrecy_PFS_R:
+ " All A B k #i. 
+    SecretR(A, B, k) @i &
+      not ((Ex #l. (Compromised(A) @ l & l<i )) | (Ex #m. (Compromised(B) @ m & m < i)) )  
+    ==> not (Ex #j. K(k)@j )"
+
+lemma secrecy_PFS_I:
+ " All A B k #i. 
+    SecretI(A, B, k) @i &
+      not ((Ex #l. (Compromised(A) @ l & l<i )) | (Ex #m. (Compromised(B) @ m & m < i)) )  
+    ==> not (Ex #j. K(k)@j )"
 
 
 end
