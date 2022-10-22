@@ -82,12 +82,10 @@ rule Resp_2:
 
 /* Question 2 here */
 /* Omit this attack and the we have key secrecy established */
-/*
 rule q2_attack:
    [!Key(A, k)]
    --[Compromised(A)]->
    [Out(<A, k>)]
-*/
 
 /* ---------- */
 /* Restrictions */
