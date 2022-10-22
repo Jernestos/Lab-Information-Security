@@ -37,56 +37,54 @@ rule genkey:
 
 
 rule Init_1:
-   let 
-       gxI = 'g'^~xI 
+   let gxI = 'g'^~xI
        tuple = <$A, gxI>
        enc_tuple = aenc(tuple, pkB)
    in  
-      [!Pk($B, pkB), Fr(~xI)]
+      [!Pk($B, pkB), !Key($A, kA), Fr(~xI)]
       -->
-      [Init_1($A, ~xI, gxI), Out(enc_tuple)]
+      [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), Out(enc_tuple)]
 
 
 rule Resp_1:
-   let dec_tuple = adec(enc_tuple, ~kB)
-       dec_id_init = fst(dec_tuple)
+   let dec_tuple = adec(enc_tuple, kB)
+       dec_id_i = fst(dec_tuple)
        dec_gx = snd(dec_tuple)
-       hash_dec_gx = h(dec_gx)
        gyR = 'g'^~yR
-       kR = dec_gx^~yR
+       hash_dec_gx = h(dec_gx)
        triplet = <$B, gyR, hash_dec_gx>
-       enc_triplet = aenc(triplet, pk_dec_id_init)
+       kR = dec_gx^~yR
+       enc_triplet = aenc(triplet, pkA)
    in
-      [In(enc_tuple), !Pk($dec_id_init, ~pk_dec_id_init), !Key($B, ~kB), Fr(~yR)]
-      --[RunningR(dec_id_init, $B, kR)]->
-      [Resp_1($B, ~yR, gyR, dec_gx, kR), Out(enc_triplet)]
+      [In(enc_tuple), !Pk($A, pkA), !Key($B, kB), Fr(~yR)]
+      --[RunningR($B, $A, kR)]->
+      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), Out(enc_triplet)]
 
 
 rule Init_2:
-   let dec_triplet = adec(enc_triplet, ~kA)
-       dec_id_resp = fst(enc_triplet)
-       dec_pair = snd(enc_triplet)
-       dec_gy = fst(dec_pair)
-       dec_hash_gx = snd(dec_pair)
+   let dec_triplet = adec(enc_triplet, kA)
+       dec_id_r = fst(dec_triplet)
+       temp_tuple = snd(dec_triplet)
+       dec_gy = fst(temp_tuple)
+       dec_hash_gx = snd(temp_tuple)
        hash_dec_gy = h(dec_gy)
        tuple = <$A, hash_dec_gy>
-       enc_tuple = aenc(tuple, pk_dec_id_resp)
        kI = dec_gy^~xI
+       enc_tuple = aenc(tuple, pkB)
    in
-      [Init_1($A, ~xI, gxI), !Pk(dec_id_resp, pk_dec_id_resp), In(enc_triplet), !Key($A, ~kA)]
-      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, dec_id_resp, kI), RunningI($A, dec_id_resp, kI), CommitI($A, dec_id_resp, kI)]->
-      [Init_2($A, ~xI, gxI, dec_gy, kI), Out(enc_tuple)]
-
+      [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), In(enc_triplet)]
+      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
+      [Init_2(<$A, kA, ~xI, gxI>, <$B, pkB>, dec_gy, kI), Out(enc_tuple)]
 
 
 rule Resp_2:
-   let dec_tuple = adec(enc_tuple, ~kB) 
-       dec_id_init = fst(dec_tuple)
+   let dec_tuple = adec(enc_tuple, kB)
+       dec_id_i = fst(dec_tuple)
        dec_hash_gy = snd(dec_tuple)
-   in    
-      [Resp_1($B, ~yR, gyR, gx, kR), In(enc_tuple), !Key($B, ~kB)]
-      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR(dec_id_init, $B, kR), CommitR($B, dec_id_init, kR)]->
-      [Resp_2($B, ~yR, gyR, gx, kR)]
+   in
+      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), In(enc_tuple)]
+      --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR($A, $B, kR), CommitR($B, $A, kR)]->
+      [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR)]
 
 
 /* ---------- */

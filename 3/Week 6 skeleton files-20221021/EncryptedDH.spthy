@@ -69,7 +69,6 @@ rule Init_2:
       [Init_2(<$A, kA, ~xI, gxI>, <$B, pkB>, dec_gy, kI), Out(<$A, enc_hash_gy>)]
 
 
-
 rule Resp_2:
    let dec_hash_gy = adec(enc_hash_gy, kB) in    
       [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), In(<i, enc_hash_gy>)]
