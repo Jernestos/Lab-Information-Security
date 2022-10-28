@@ -10,6 +10,15 @@ functions: f/2, MAC/3, MACprime/2
 //                     Rules                       //
 /////////////////////////////////////////////////////
 
+/*
+
+rule template:    
+  []
+  -->
+  []
+
+*/
+
 // ========= Terminal-Issuer Channel ========== //
 rule Terminal_Issuer_Channel:
     [ Send(Sender, Recipient, channelID, msg) ]
@@ -36,6 +45,50 @@ rule Create_Card:
       Out(pk(~privkCard))
     ]
 
+// =============== Card rules ================ //
+
+rule Card_1:
+  let sk = f(mk, ~ATC) in
+    [!SharedKey(PAN, mk), !IssuedBy(PAN_, $Issuer), !LtkCard(PAN__, privkCard), !Pk(PAN___, pk(privkCard____)), In(~ATC), Fr(~nc)]
+    --[Eq(PAN, PAN_), Eq(PAN_, PAN__), Eq(PAN__, PAN___), Eq(privkCard, privkCard____)]>
+    [Card_St_1(PAN, mk, $Issuer, privkCard, pk(privkCard), ~ATC, ~nc, sk)]
+
+
+rule Card_2_offline: //CID = TC  
+  let AC = MAC(sk, <$amount, un>, ~ATC)
+      AIP = 'fDDA'
+      CID = 'TC'
+  in
+    [Card_St_1(PAN, mk, $Issuer, privkCard, pk(privkCard), ~ATC, ~nc, sk), In(<'GET_PROCESSING_OPTIONS', <$amount, un>>)]
+    -->
+    [Card_St_2_offline(PAN, mk, $Issuer, privkCard, pk(privkCard), ~ATC, ~nc, sk, AC, AIP, CID, <$amount, un>), Out(<AIP, CID, ATC, AC)]
+
+rule Card_2_online: //CID = ARQC  
+  let AC = MAC(sk, <$amount, un>, ~ATC)
+      AIP = 'fDDA'
+      CID = 'ARQC'
+  in
+    [Card_St_1(PAN, mk, $Issuer, privkCard, pk(privkCard), ~ATC, ~nc, sk), In(<'GET_PROCESSING_OPTIONS', <$amount, un>>)]
+    -->
+    [Card_St_2_online(PAN, mk, $Issuer, privkCard, pk(privkCard), ~ATC, ~nc, sk, AC, AIP, CID, <$amount, un>), Out(<AIP, CID, ATC, AC)]
+
+
+rule Card_3_offline: 
+  let sm = <un, amount, ~nc, ~ATC, AIP>
+      SDAD = sign(sm, privkCard)
+  in
+    [Card_St_2_offline(PAN, mk, $Issuer, privkCard, pk(privkCard), ~ATC, ~nc, sk, AC, AIP, CID, <$amount, un>), In('READ RECORD')]
+    -->
+    [Card_St_3_offline(PAN, mk, $Issuer, privkCard, pk(privkCard), ~ATC, ~nc, sk, AC, AIP, CID, <$amount, un>, sm, SDAD), Out(<PAN, SDAD, ~nc)]
+
+rule Card_3_online: 
+  let sm = <un, amount, ~nc, ~ATC, AIP>
+      SDAD = sign(sm, privkCard)
+  in
+    [Card_St_2_online(PAN, mk, $Issuer, privkCard, pk(privkCard), ~ATC, ~nc, sk, AC, AIP, CID, <$amount, un>), In('READ RECORD')]
+    -->
+    [Card_St_3_online(PAN, mk, $Issuer, privkCard, pk(privkCard), ~ATC, ~nc, sk, AC, AIP, CID, <$amount, un>, sm, SDAD), Out(<PAN, SDAD, ~nc)]
+
 // ============== Compromise =============== //
 rule Compromise_Card:
     [ !LtkCard(~PAN, ~privkCard) ]
@@ -49,7 +102,7 @@ rule Compromise_Shared_Key:
       Compromise(~PAN) ]->
     [ Out(~mk) ]
 
-// =========== Get Processing Options ============ //
+// =========== Get Processing Options ============ // TERMINAL
 rule Terminal_Sends_GPO:
     let PDOL = <$amount, ~un>
     in
@@ -58,23 +111,42 @@ rule Terminal_Sends_GPO:
     [ Out(<'GET_PROCESSING_OPTIONS', PDOL>),
       Terminal_Sent_GPO($Terminal, PDOL) ]
 
-rule Card_Responds_To_GPO:
-    [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
-      !IssuedBy(~PAN, $Issuer),
-      !ATC(ATC)
-      //Things to do Here
-    ]
+// ============== Read Records ==================== //
+
+rule Card_Responds_To_GPO_Online: //CAN MODIFY THIS ONE
+    // [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
+    //   !IssuedBy(~PAN, $Issuer),
+    //   !ATC(ATC)
+    //   //Things to do Here
+    // ]
+    [Terminal_Sent_GPO($Terminal, PDOL), !IssuedBy(~PAN, $Issuer), In(<AIP, 'ARQC', ATC, AC>)]
   --[ Once(<~PAN, ATC, 'Card'>) //used in the restriction 'once'
     ]->
     [
-      //Things wo do Here as well
-    ] 
+      Card_Responds_To_GPO_Online($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'ARQC', ATC, AC>), Out('READ RECORD')
+    ]
 
-
-// ============== Read Records ==================== //
+rule Card_Responds_To_GPO_Offline: //CAN MODIFY THIS ONE
+    // [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
+    //   !IssuedBy(~PAN, $Issuer),
+    //   !ATC(ATC)
+    //   //Things to do Here
+    // ]
+    [Terminal_Sent_GPO($Terminal, PDOL), !IssuedBy(~PAN, $Issuer), In(<AIP, 'TC', ATC, AC>)]
+  --[ Once(<~PAN, ATC, 'Card'>) //used in the restriction 'once'
+    ]->
+    [
+      Card_Responds_To_GPO_Offline($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'TC', ATC, AC>), Out('READ RECORD')
+    ]
 
 
 // =========== Offline Data Authentication ============ //
+
+rule Terminal_Data_Authentication_Offline:
+  let sm = <fst(PDOL), snd(PDOL), ~nc, ATC, AIP> in
+  [Card_Responds_To_GPO_Offline($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'TC', ATC, AC>), !Pk(~PAN_, pkC), !IssuedBy(~PAN__, $i), In(<PAN___, SDAD, ~nc)]
+  --[Eq(~PAN, ~PAN_), Eq(~PAN_, ~PAN__), Eq(~PAN__, PAN___), Eq($Issuer, $i), Eq(verify(SDAD, sm, pkC), true)]->
+  [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'TC', ATC, AC)] //TODO
 
 
 // ============== Offline Authorization ============== //
@@ -88,6 +160,12 @@ rule Terminal_Receives_TC:
 
 
 // ============== Online Authorization ============== //
+
+rule Terminal_Data_Authentication_Online:
+  let sm = <fst(PDOL), snd(PDOL), ~nc, ATC, AIP> in
+  [Card_Responds_To_GPO_Online($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'ARQC', ATC, AC>), !Pk(~PAN_, pkC), !IssuedBy(~PAN__, $i), In(<PAN___, SDAD, ~nc)]
+  --[Eq(~PAN, ~PAN_), Eq(~PAN_, ~PAN__), Eq(~PAN__, PAN___), Eq($Issuer, $i), Eq(verify(SDAD, sm, pkC), true)]->
+  [Terminal_Ready_To_Send_AC_Online($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'ARQC', ATC, AC>, pkC, SDAD, ~nc)] //TODO
 
 
 // ================== Issuer =================== //
