@@ -44,36 +44,36 @@ rule Init_1:
 
 
 rule Resp_1:
-   let dec_gx = adec(enc_gx, kB)
-       hash_dec_gx = h(dec_gx)
+   // let dec_gx = adec(enc_gx, kB)
+   let hash_dec_gx = h(dec_gx)
        gyR = 'g'^~yR
        kR = dec_gx^~yR
        tuple = <gyR, hash_dec_gx>
        enc_tuple = aenc(tuple, pkA)
-   in
-      [In(<i, enc_gx>), !Pk($A, pkA), !Key($B, kB), Fr(~yR)]
-      --[RunningR($B, $A, kR), Eq(i, $A)]->
+   in /*In(<i, enc_gx>)*/
+      [In(<$A, aenc(dec_gx, pk(kB))>), !Pk($A, pkA), !Key($B, kB), Fr(~yR)]
+      --[RunningR($B, $A, kR)]->
       [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, i, dec_gx, kR), Out(<$B, enc_tuple>)]
 
 
 rule Init_2:
-   let dec_tuple = adec(enc_tuple, kA)
-       dec_gy = fst(dec_tuple)
-       dec_hash_gx = snd(dec_tuple)
-       hash_dec_gy = h(dec_gy)
+   // let dec_tuple = adec(enc_tuple, kA)
+   //     dec_gy = fst(dec_tuple)
+   //     dec_hash_gx = snd(dec_tuple)
+   let hash_dec_gy = h(dec_gy)
        kI = dec_gy^~xI
        enc_hash_gy = aenc(hash_dec_gy, pkB)
-   in
-      [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), In(<r, enc_tuple>)]
-      --[Eq(dec_hash_gx, h(gxI)), Eq(r, $B), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
+   in /*In(<r, enc_tuple>)*/
+      [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), In(<$B, aenc(<dec_gy, dec_hash_gx>, pk(kA))>)]
+      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
       [Init_2(<$A, kA, ~xI, gxI>, <$B, pkB>, dec_gy, kI), Out(<$A, enc_hash_gy>)]
 
 
 rule Resp_2:
-   let dec_hash_gy = adec(enc_hash_gy, kB) in    
-      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, i, dec_gx, kR), In(<i_, enc_hash_gy>)]
-      --[Eq(dec_hash_gy, h(gyR)), Eq(i_, $A), FinishedR($B), SecretR($A, $B, kR), CommitR($B, $A, kR)]->
-      [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, i, dec_gx, kR)]
+   // let dec_hash_gy = adec(enc_hash_gy, kB) in     /*In(<i_, enc_hash_gy>)*/
+   [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, i, dec_gx, kR), In(<$A, aenc(dec_hash_gy, pk(kB))>)]
+   --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR($A, $B, kR), CommitR($B, $A, kR)]->
+   [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, i, dec_gx, kR)]
 
 /* ---------- */
 /* Key Reveal */

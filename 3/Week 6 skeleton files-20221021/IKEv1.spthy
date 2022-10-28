@@ -58,37 +58,23 @@ rule Resp_1:
   let gyR = 'g'^~yR
       enc_id_B = aenc($B, pkA)
       enc_NR_B = aenc(~NR, pkA)
-      enc_id_I = fst(triplet)
-      temp_tuple = snd(triplet)
-      enc_NI = fst(temp_tuple)
-      gx = snd(temp_tuple)
-      dec_id_I = adec(enc_id_I, kB)
-      dec_NI = adec(enc_NI, kB)
       skID = prf(<h(<dec_NI, ~NR>), $A, $B>)
       HASH_B = prf(<skID, gyR, gx, $B, $A>)
       quartet = <enc_id_B, enc_NR_B, gyR, HASH_B>
       kR = prf(<skID, gx^~yR>)
-  in
-  [In(triplet), !Pk($A, pkA), !Key($B, kB), Fr(~yR), Fr(~NR)]
-  --[RunningR($B, $A, kR), Eq(dec_id_I, $A)]->
+  in /*In(triplet)*/
+  [In(aenc(<aenc($A, pk(kB)), aenc(dec_NI, pk(kB)), gx>, pk(kB))), !Pk($A, pkA), !Key($B, kB), Fr(~yR), Fr(~NR)]
+  --[RunningR($B, $A, kR)]->
   [Resp_1(<$B, kB, ~yR, gyR, ~NR>, <$A, pkA, gx, dec_NI>, skID, HASH_B, kR), Out(quartet)]
 
 rule Init_2:
-  let enc_id_R = fst(quartet)
-      temp_triplet = snd(quartet)
-      temp_tuple = snd(temp_triplet)
-      enc_NR = fst(temp_triplet)
-      gy = fst(temp_tuple)
-      HASH_B = snd(temp_tuple)
-      dec_id_R = adec(enc_id_R, kA)
-      dec_enc_NR = adec(enc_NR, kA)
-      skID = prf(<h(<~NI, dec_enc_NR>), $A, $B>)
+  let skID = prf(<h(<~NI, dec_enc_NR>), $A, $B>)
       HASH_A = prf(<skID, gxI, gy, $A, $B>)
       HASH_B_Check = prf(<skID, gy, gxI, $B, $A>)
       kI = prf(<skID, gy^~xI>)
-  in
-  [Init_1(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB>), In(quartet)]
-  --[Eq(dec_id_R, $B), Eq(HASH_B, HASH_B_Check), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
+  in 
+  [Init_1(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB>), In(aenc(<aenc($B, pk(kA)), aenc(dec_enc_NR, pk(kA)), gy, HASH_B>, pk(kA)))]
+  --[Eq(HASH_B, HASH_B_Check), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
   [Init_2(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB, gy, dec_enc_NR>, skID, HASH_A, kI), Out(HASH_A)]
 
 rule Resp_2:
