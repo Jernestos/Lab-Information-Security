@@ -58,7 +58,7 @@ rule Resp_1:
    in /*In(enc_tuple)*/
       [In(aenc(<$A, dec_gx>, pk(kB))), !Pk($A, pkA), !Key($B, kB), Fr(~yR)]
       --[RunningR($B, $A, kR)]->
-      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_id_i, dec_gx, kR), Out(enc_triplet)]
+      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), Out(enc_triplet)]
 
 
 rule Init_2:
@@ -82,9 +82,9 @@ rule Resp_2:
    //     dec_id_i = fst(dec_tuple)
    //     dec_hash_gy = snd(dec_tuple)
    // in /*In(enc_tuple)*/
-   [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_id_i, dec_gx, kR), In(aenc(<$A, dec_hash_gy>, pk(kB)))]
+   [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), In(aenc(<$A, dec_hash_gy>, pk(kB)))]
    --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR($A, $B, kR), CommitR($B, $A, kR)]->
-   [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_id_i, dec_gx, kR)]
+   [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR)]
 
 
 /* ---------- */
