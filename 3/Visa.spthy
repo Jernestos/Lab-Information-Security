@@ -354,7 +354,7 @@ lemma auth_to_terminal_offline:
 "All terminal pan card transaction #i.
 	Commit(terminal, pan, <card, 'Terminal', transaction>) @i
 	 ==> (Ex #j. Running(pan, terminal, <card, 'Terminal', transaction>) @j) 
-      | Ex C #r. Honest(A) @i & Compromise(A) @r"
+      | Ex C #r. Honest(C) @i & Compromise(C) @r"
 
 
 // //offline
