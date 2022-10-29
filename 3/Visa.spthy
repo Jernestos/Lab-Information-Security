@@ -343,11 +343,18 @@ lemma executable_online:
 //all by terminal offline accepted transactions are auth. to it by card
 //all by terminal online accepted transactions are auth. to it by card and issuer
 //all by issuer         accepted transactions are auth. to it by card and terminal
+
 // lemma noninjective_agreement:
 // "All a b t #i.
 //   Commit(a,b,t) @i
 //   ==> (Ex #j. Running(b,a,t) @j)
 //       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
+
+lemma auth_to_terminal_offline:
+"All terminal pan card transaction #i.
+	Commit(terminal, pan, <card, 'Terminal', transaction>) @i
+	 ==> (Ex #j. Running(pan, terminal, <card, 'Terminal', transaction>) @j) 
+      | Ex C #r. Honest(A) @i & Compromise(A) @r"
 
 
 // //offline
@@ -397,11 +404,11 @@ lemma auth_to_terminal_offline:
 //Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)
 //Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)
 
-lemma auth_to_terminal_online:
-"All terminal issuer pan transaction #i.
-	Commit(terminal, pan, <'Card', 'Terminal', transaction>) @i & Commit(terminal, issuer, <'Issuer', 'Terminal', transaction>) @i
-	==> (Ex #j. Running(terminal, issuer, <'Issuer', 'Terminal', transaction>) @j ) 
-      | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
+// lemma auth_to_terminal_online:
+// "All terminal issuer pan transaction #i.
+// 	Commit(terminal, pan, <'Card', 'Terminal', transaction>) @i & Commit(terminal, issuer, <'Issuer', 'Terminal', transaction>) @i
+// 	==> (Ex #j. Running(terminal, issuer, <'Issuer', 'Terminal', transaction>) @j ) 
+//       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
 
 
 
