@@ -256,14 +256,31 @@ lemma auth_to_terminal_offline:
   ==> (Ex #j. Running(pan, issuer, <'Card', 'Issuer', transaction>) @j)
       | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
 
-lemma auth_to_terminal_minimal_offline: //non-injective agreement with one card session
-	"All terminal pan card transaction #i.
-		Commit(terminal, pan, <card, 'Terminal', transaction>)@i
+lemma auth_to_terminal: //injective agreement
+	"All T P r t #i.
+		Commit(T, P, <r, 'Terminal', t>)@i
 	 ==>
-		(Ex #j. Running(pan, terminal, <card, 'Terminal', transaction>)@j) |
-		Ex A #k. Compromise(A)@k & Honest(A)@i"
+		((Ex #j. Running(P, T, <r, 'Terminal', t>)@j & j < i) &
+			not (Ex T2 P2 #i2. Commit(T2, P2, <r, 'Terminal', t>)@i2 & not(#i2 = #i))
+		) |
+		Ex A #k. Honest(A)@i & Compromise(A)@k"
 
+lemma auth_to_bank_minimal: //non-injective agreement with one card session
+	"All B P r t #i.
+		(All #a #b. OneCard()@a & OneCard()@b ==> #a = #b) &
+		Commit(B, P, <r, 'Bank', t>)@i
+	 ==>
+		(Ex #j. Running(P, B, <r, 'Bank', t>)@j) |
+		Ex A #k. Honest(A)@i & Compromise(A)@k"
 
+lemma auth_to_bank: //injective agreement
+	"All B P r t #i.
+		Commit(B, P, <r, 'Bank', t>)@i
+	 ==>
+		((Ex #j. Running(P, B, <r, 'Bank', t>)@j & j < i) &
+			not (Ex B2 P2 #i2. Commit(B2, P2, <r, 'Bank', t>)@i2 & not(#i2 = #i))
+		) |
+		Ex A #k. Honest(A)@i & Compromise(A)@k"
   
 
 /////////////////////////////////////////////////////
