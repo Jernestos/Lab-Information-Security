@@ -29,7 +29,7 @@ rule Create_Card:
   -->
     [ !SharedKey(~PAN, ~mk),
       //annotate the issuing bank
-      !IssuedBy(~PAN, $Issuer),
+      !IssuedBy(~PAN, $Issuer), SecretPAN(~PAN), SecretMK(~MK),
       //PKI
       !LtkCard(~PAN, ~privkCard),
       !Pk(~PAN, pk(~privkCard)),
