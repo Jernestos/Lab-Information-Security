@@ -243,18 +243,18 @@ rule Card_Responds_To_RR_ARQC: //last rule for card
 
 //offline
 rule Terminal_Data_Authentication_TC: //last interaction with card
-  let sm = <snd(PDOL), fst(PDOL), nc, ATC, AIP> in
-    [Terminal_SENT_RR($Terminal, PDOL, <AIP, 'TC', ATC, AC>), In(<PAN_, SDAD, nc>), !Pk(~PAN, pkC_), In(pkC)]
-  --[Eq(verify(SDAD, sm, pkC), true), Eq(~PAN, PAN_), Eq(pkC, pkC_)/*, Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)*/]->
+  let sm = <snd(PDOL), fst(PDOL), ~nc, ATC, AIP> in
+    [Terminal_SENT_RR($Terminal, PDOL, <AIP, 'TC', ATC, AC>), In(<~PAN, SDAD, ~nc>), !Pk(~PAN, pkC_), In(pkC)]
+  --[Eq(verify(SDAD, sm, pkC), true), Eq(pkC, pkC_)/*, Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)*/]->
     [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'TC', ATC, AC)]
 
 //online
 rule Terminal_Data_Authentication_ARQC: //last interaction with card
-  let sm = <snd(PDOL), fst(PDOL), nc, ATC, AIP> 
+  let sm = <snd(PDOL), fst(PDOL), ~nc, ATC, AIP> 
       transaction = <~PAN, PDOL, ATC, AC>
   in
-    [Terminal_SENT_RR($Terminal, PDOL, <AIP, 'ARQC', ATC, AC>), In(<PAN_, SDAD, nc>), !Pk(~PAN, pkC_), In(pkC)]
-  --[Eq(verify(SDAD, sm, pkC), true), Eq(~PAN, PAN_), Eq(pkC, pkC_), Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
+    [Terminal_SENT_RR($Terminal, PDOL, <AIP, 'ARQC', ATC, AC>), In(<~PAN, SDAD, ~nc>), !Pk(~PAN, pkC_), In(pkC)]
+  --[Eq(verify(SDAD, sm, pkC), true), Eq(pkC, pkC_), Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
     [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC)]
 
 
