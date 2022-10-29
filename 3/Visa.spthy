@@ -10,112 +10,6 @@ functions: f/2, MAC/3, MACprime/2
 //                     Rules                       //
 /////////////////////////////////////////////////////
 
-//spawn $amount?
-
-/* From old messed up attempt
-rule Card_1:
-  let sk = f(~mk, ~ATC) in
-    [!SharedKey(~PAN, ~mk), !IssuedBy(~PAN_, $Issuer), !LtkCard(~PAN__, ~privkCard), !Pk(~PAN___, pk(~privkCard____)), In(~ATC), Fr(~nc)]
-    --[Eq(~PAN, ~PAN_), Eq(~PAN_, ~PAN__), Eq(~PAN__, ~PAN___), Eq(~privkCard, ~privkCard____)]>
-    [Card_St_1(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk)]
-
-
-rule Card_2_offline: //CID = TC  , CHECKED
-  let AC = MAC(sk, PDOL, ~ATC)
-      AIP = 'fDDA'
-      CID = 'TC'
-      transaction = <~PAN, ~ATC, AC, AIP, CID, PDOL, AIP, PDOL>
-  in
-    [Card_St_1(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk), In(<'GET_PROCESSING_OPTIONS', PDOL>)]
-    --[Once(<PAN, ~ATC>), Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)]->
-    [Card_St_2_offline(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC)]
-
-rule Card_2_online: //CID = ARQC  
-  let AC = MAC(sk, PDOL, ~ATC)
-      AIP = 'fDDA'
-      CID = 'ARQC'
-      transaction = <~PAN, ~ATC, AC, AIP, CID, PDOL, AIP, PDOL>
-  in
-    [Card_St_1(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk), In(<'GET_PROCESSING_OPTIONS', PDOL>)]
-    --[Once(<PAN, ~ATC>), Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)]->
-    [Card_St_2_online(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC)]
-
-
-rule Card_3_offline: 
-  let sm = <snd(PDOL), fst(PDOL), ~nc, ~ATC, AIP>
-      SDAD = sign(sm, privkCard)
-      transaction = <~PAN, ~ATC, AC, AIP, CID, PDOL, AIP, PDOL>
-  in
-    [Card_St_2_offline(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk, AC, AIP, CID, PDOL), In('READ RECORD')]
-    --[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)]->
-    [Card_St_3_offline(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk, AC, AIP, CID, PDOL, sm, SDAD), Out(<PAN, SDAD, ~nc)]
-
-rule Card_3_online: 
-  let sm = <snd(PDOL), fst(PDOL), ~nc, ~ATC, AIP>
-      SDAD = sign(sm, privkCard)
-      transaction = <~PAN, ~ATC, AC, AIP, CID, PDOL, AIP, PDOL>
-  in
-    [Card_St_2_online(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk, AC, AIP, CID, PDOL), In('READ RECORD')]
-    --[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)]->
-    [Card_St_3_online(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk, AC, AIP, CID, PDOL, sm, SDAD), Out(<PAN, SDAD, ~nc)]
-
-// =========== Offline Data Authentication ============ //
-
-rule Terminal_Data_Authentication_Offline:
-  let sm = <fst(PDOL), snd(PDOL), ~nc, ATC, AIP> in
-  [Card_Responds_To_GPO_Offline($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'TC', ATC, AC>), !Pk(~PAN_, pkC), !IssuedBy(~PAN__, $i), In(<PAN___, SDAD, ~nc)]
-  --[Eq(~PAN, ~PAN_), Eq(~PAN_, ~PAN__), Eq(~PAN__, PAN___), Eq($Issuer, $i), Eq(verify(SDAD, sm, pkC), true)]->
-  [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'TC', ATC, AC)] //TODO
-
-
-// ============== Offline Authorization ============== //
-rule Terminal_Receives_TC:
-    let transaction = <~PAN, PDOL, ATC, AC> in
-    [ Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'TC', ATC, AC),
-      !IssuedBy(~PAN, $Issuer) ]
-  --[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>),
-      Honest($Issuer), Honest(~PAN) ]->
-    [ ]
-
-
-// ============== Online Authorization ============== //
-
-rule Terminal_Data_Authentication_Online:
-  let sm = <fst(PDOL), snd(PDOL), ~nc, ATC, AIP> in
-  [Card_Responds_To_GPO_Online($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'ARQC', ATC, AC>), !Pk(~PAN_, pkC), !IssuedBy(~PAN__, $i), In(<PAN___, SDAD, ~nc)]
-  --[Eq(~PAN, ~PAN_), Eq(~PAN_, ~PAN__), Eq(~PAN__, PAN___), Eq($Issuer, $i), Eq(verify(SDAD, sm, pkC), true)]->
-  [Terminal_Ready_To_Send_AC_Online($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'ARQC', ATC, AC>, pkC, SDAD, ~nc)] //TODO
-
-  // ============== Read Records ==================== //
-
-rule Card_Responds_To_GPO_Online: //CAN MODIFY THIS ONE
-    // [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
-    //   !IssuedBy(~PAN, $Issuer),
-    //   !ATC(ATC)
-    //   //Things to do Here
-    // ]
-    [Terminal_Sent_GPO($Terminal, PDOL), !IssuedBy(~PAN, $Issuer), In(<AIP, 'ARQC', ATC, AC>)]
-  --[ Once(<~PAN, ATC, 'Card'>) //used in the restriction 'once'
-    ]->
-    [
-      Card_Responds_To_GPO_Online($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'ARQC', ATC, AC>), Out('READ RECORD')
-    ]
-
-rule Card_Responds_To_GPO_Offline: //CAN MODIFY THIS ONE
-    // [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
-    //   !IssuedBy(~PAN, $Issuer),
-    //   !ATC(ATC)
-    //   //Things to do Here
-    // ]
-    [Terminal_Sent_GPO($Terminal, PDOL), !IssuedBy(~PAN, $Issuer), In(<AIP, 'TC', ATC, AC>)]
-  --[ Once(<~PAN, ATC, 'Card'>) //used in the restriction 'once'
-    ]->
-    [
-      Card_Responds_To_GPO_Offline($Terminal, PDOL, ~PAN, $Issuer, <AIP, 'TC', ATC, AC>), Out('READ RECORD')
-    ]
-
- */
-
 // ========= Terminal-Issuer Channel ========== //
 rule Terminal_Issuer_Channel:
     [ Send(Sender, Recipient, channelID, msg) ]
@@ -175,9 +69,9 @@ rule Card_Responds_To_GPO_TC: //generate sk, fresh nc, receive get processing op
     [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
       !IssuedBy(~PAN, $Issuer),
       !ATC(ATC),
-      !SharedKey(~PAN_, ~mk), !LtkCard(~PAN__, ~privkCard), !Pk(~PAN___, pk(~privkCard_)), Fr(~nc)
+      !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~PAN, ~PAN_), Eq(~PAN_, ~PAN__), Eq(~PAN__, ~PAN___), Eq(~privkCard, ~privkCard_) ,Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)
+  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_), Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -194,9 +88,9 @@ rule Card_Responds_To_GPO_ARQC: //generate sk, fresh nc, receive get processing 
     [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
       !IssuedBy(~PAN, $Issuer),
       !ATC(ATC),
-      !SharedKey(~PAN_, ~mk), !LtkCard(~PAN__, ~privkCard), !Pk(~PAN___, pk(~privkCard_)), Fr(~nc)
+      !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~PAN, ~PAN_), Eq(~PAN_, ~PAN__), Eq(~PAN__, ~PAN___), Eq(~privkCard, ~privkCard_), Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)
+  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_), Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -280,9 +174,9 @@ rule Terminal_Sends_AC:
 //Terminal receives and commits
 rule Terminal_Receives_AC_and_Commits: //last rule for terminal
   let transaction = <~PAN, PDOL, ATC, AC> in
-    [Recv($Issuer, $Terminal, <channelID_, '2'>, <'ACCEPTED', ARPC>), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
-  --[Online(), Eq(channelID_, ~channelID), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
-    [Terminal_Commits($Terminal, $Issuer, <'ACCEPTED', ARPC>, channelID_, ARPC)]
+    [Recv($Issuer, $Terminal, <~channelID, '2'>, <'ACCEPTED', ARPC>), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
+  --[Online(), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
+    [Terminal_Commits($Terminal, $Issuer, <'ACCEPTED', ARPC>, ~channelID, ARPC)]
 
 
 // ================== Issuer =================== //
@@ -299,7 +193,7 @@ rule Issuer_Receives_AC:
     [ Issuer_Commits($Issuer, $Terminal, transaction, channelID, ARPC) ]
 
 rule Issuer_Commits:
-    let transaction = <~PAN, PDOL, ATC, AC> in
+    let transaction = <~PAN, PDOL, ATC, AC> in //last rule for issuer
     [ Issuer_Commits($Issuer, $Terminal, transaction, channelID, ARPC) ]
   --[ Commit($Issuer, ~PAN, <'Card', 'Issuer', transaction>),
       Commit($Issuer, $Terminal, <'Terminal', 'Issuer', transaction>),
