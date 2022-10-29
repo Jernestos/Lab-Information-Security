@@ -218,7 +218,7 @@ rule Terminal_Sends_RR_ARQC:
 rule Card_Responds_To_RR_TC: //last rule for card
   let sm = <snd(PDOL), fst(PDOL), ~nc, ATC, AIP> 
       SDAD = sign(sm, ~privkCard)
-      transaction = <~PAN, PDOL, ATC, AC>
+      //transaction = <~PAN, PDOL, ATC, AC>
   in
     [Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL), In('READ_RECORD')]
   -->
@@ -230,7 +230,7 @@ rule Card_Responds_To_RR_TC: //last rule for card
 rule Card_Responds_To_RR_ARQC: //last rule for card
   let sm = <snd(PDOL), fst(PDOL), ~nc, ATC, AIP>
       SDAD = sign(sm, ~privkCard)
-      transaction = <~PAN, PDOL, ATC, AC>
+      //transaction = <~PAN, PDOL, ATC, AC>
   in
     [Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'ARQC', PDOL), In('READ_RECORD')]
   -->
