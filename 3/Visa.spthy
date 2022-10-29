@@ -71,7 +71,7 @@ rule Card_Responds_To_GPO_TC: //generate sk, fresh nc, receive get processing op
       !ATC(ATC),
       !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_), Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)
+  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_)/*, Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)*/
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -83,14 +83,14 @@ rule Card_Responds_To_GPO_ARQC: //generate sk, fresh nc, receive get processing 
       AC = MAC(sk, PDOL, ATC)
       AIP = 'fDDA'
       CID = 'ARQC'
-      transaction = <~PAN, PDOL, ATC, AC>
+      //transaction = <~PAN, PDOL, ATC, AC>
   in
     [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
       !IssuedBy(~PAN, $Issuer),
       !ATC(ATC),
       !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_), Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)
+  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_)/*, Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)*/
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -117,7 +117,7 @@ rule Card_Responds_To_RR_TC: //last rule for card
       //transaction = <~PAN, PDOL, ATC, AC>
   in
     [Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL), In('READ_RECORD')]
-  -->
+  --[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
   //--/*[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]-*/>
     [Card_RESPONDED_To_RR_TC(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
 
@@ -129,7 +129,7 @@ rule Card_Responds_To_RR_ARQC: //last rule for card
       //transaction = <~PAN, PDOL, ATC, AC>
   in
     [Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'ARQC', PDOL), In('READ_RECORD')]
-  -->
+  --[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
   //--/*[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]-*/>
     [Card_RESPONDED_To_RR_ARQC(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'ARQC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
 
