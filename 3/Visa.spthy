@@ -29,7 +29,7 @@ rule Create_Card:
   -->
     [ !SharedKey(~PAN, ~mk),
       //annotate the issuing bank
-      !IssuedBy(~PAN, $Issuer), SecretPAN(~PAN), SecretMK(~mk), SecretPrivkCard(~privkCard),
+      !IssuedBy(~PAN, $Issuer), //SecretPAN(~PAN), SecretMK(~mk), SecretPrivkCard(~privkCard),
       //PKI
       !LtkCard(~PAN, ~privkCard),
       !Pk(~PAN, pk(~privkCard)),
@@ -251,8 +251,8 @@ lemma executable_online:
 //--[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
 //[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>),
 lemma auth_to_terminal_offline:
-"All issuer pan transaction #i.
-	Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(pan) @i & Honest(issuer) @i
+"All issuer pan transaction #i #s #t.
+	Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(pan) @s & Honest(issuer) @t
 	==> (Ex #j. Running(pan, 'Terminal', <'Card', 'Terminal', transaction>) @j & Running(pan, issuer, <'Card', 'Issuer', transaction>) @j) 
       | Ex C #r. Compromise(C) @i & Honest(C) @r"
 
@@ -370,6 +370,7 @@ lemma auth_to_terminal_offline:
 //           Security Properties                   //
 /////////////////////////////////////////////////////
 
+/*
 lemma secrecy_MK:
 "All MK #i.
 	SecretMK(MK)@i
@@ -386,5 +387,6 @@ lemma secrecy_privkCard:
 		SecretPrivkCard(privkCard)@i
 	 ==>
 		not (Ex #j. !KU(privkCard)@j) | Ex A #k. Honest(A)@i & Compromise(A)@k"
+*/
 
 end
