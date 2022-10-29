@@ -271,14 +271,14 @@ rule Terminal_Sends_AC:
   let transaction = <~PAN, PDOL, ATC, AC> in
     [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, SDAD, nc, pkC), Fr(~channelID)]
   --[Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
-    [Send($Terminal, $Issuer, <channelID, '1'>, transaction), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, SDAD, nc, pkC, <~PAN, PDOL, ATC, AC, ~channelID>)]
+    [Send($Terminal, $Issuer, <~channelID, '1'>, transaction), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, SDAD, nc, pkC, <~PAN, PDOL, ATC, AC, ~channelID>)]
 
 //Terminal receives and commits
 rule Terminal_Receives_AC_and_Commits: //last rule for terminal
   let transaction = <~PAN, PDOL, ATC, AC> in
     [Recv($Issuer, $Terminal, <channelID_, '2'>, transaction), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, SDAD, nc, pkC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
   --[Online(), Honest($Terminal), Eq(channelID_, ~channelID), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
-    [Terminal_Commits($Terminal, $Issuer, transaction, channelID, ARPC)]
+    [Terminal_Commits($Terminal, $Issuer, transaction, channelID_, ARPC)]
 
 
 // ================== Issuer =================== //
