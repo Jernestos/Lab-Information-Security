@@ -247,13 +247,20 @@ lemma executable_online:
 //   ==> (Ex #j. Running(b,a,t) @j)
 //       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
 
-//--[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
-//[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>),
+
+//offline auth.--[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Honest($Issuer), Honest(~PAN) ]->
+// offline Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
 lemma auth_to_terminal_offline:
-"All pan issuer transaction #i.
-	Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(pan) @i & Honest(issuer) @i
-	==> (Ex #j. Running(pan, 'Terminal', <'Card', 'Terminal', transaction>) @j & Running(pan, issuer, <'Card', 'Issuer', transaction>) @j) 
-      | Ex C #r. Compromise(C) @r & Honest(C) @i"
+"All issuer pan transaction #i.
+  Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(issuer) @i & Honest(pan)
+  ==> (Ex #j. Running(pan, issuer, <'Card', 'Issuer', transaction>) @j)
+      | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
+
+// lemma auth_to_terminal_offline:
+// "All pan issuer transaction #i.
+// 	Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(pan) @i & Honest(issuer) @i
+// 	==> (Ex #j. Running(pan, 'Terminal', <'Card', 'Terminal', transaction>) @j & Running(pan, issuer, <'Card', 'Issuer', transaction>) @j) 
+//       | Ex C #r. Compromise(C) @r & Honest(C) @i"
 
 // lemma auth_to_issuer:
 // "All B P r transaction #i.
