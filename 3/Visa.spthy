@@ -248,11 +248,13 @@ lemma executable_online:
 //   ==> (Ex #j. Running(b,a,t) @j)
 //       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
 
+//--[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
+//[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>),
 lemma auth_to_terminal_offline:
 "All issuer pan transaction #i.
 	Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(pan) @i & Honest(issuer) @i
 	==> (Ex #j. Running(pan, 'Terminal', <'Card', 'Terminal', transaction>) @j & Running(pan, issuer, <'Card', 'Issuer', transaction>) @j) 
-      | Ex C #r. Honest(C) @i & Compromise(C) @r"
+      | Ex C #r. Compromise(C) @i & Honest(C) @r"
 
 // lemma auth_to_issuer:
 // "All B P r transaction #i.
@@ -368,5 +370,14 @@ lemma auth_to_terminal_offline:
 //           Security Properties                   //
 /////////////////////////////////////////////////////
 
+lemma secrecy_MK:
+"All MK #i.
+	SecretMK(MK)@i
+	==> not (Ex #j. !KU(MK)@j) | Ex A #k. Honest(A)@i & Compromise(A)@k"
+
+lemma secrecy_PAN:
+"All PAN #i.
+	SecretPAN(PAN)@i
+	==> not (Ex #j. !KU(PAN)@j) | Ex A #k. Honest(A)@i & Compromise(A)@k"
 
 end
