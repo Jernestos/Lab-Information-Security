@@ -170,7 +170,8 @@ rule Card_Responds_To_GPO_TC: //generate sk, fresh nc, receive get processing op
       AC = MAC(sk, PDOL, ATC)
       AIP = 'fDDA'
       CID = 'TC'
-  in  // transaction = <AIP, CID, ~ATC, AC>
+      transaction = <~PAN, PDOL, ATC, AC>
+  in
     [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
       !IssuedBy(~PAN, $Issuer),
       !ATC(ATC),
@@ -188,7 +189,8 @@ rule Card_Responds_To_GPO_ARQC: //generate sk, fresh nc, receive get processing 
       AC = MAC(sk, PDOL, ATC)
       AIP = 'fDDA'
       CID = 'ARQC'
-  in  // transaction = <AIP, CID, ~ATC, AC>
+      transaction = <~PAN, PDOL, ATC, AC>
+  in
     [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
       !IssuedBy(~PAN, $Issuer),
       !ATC(ATC),
