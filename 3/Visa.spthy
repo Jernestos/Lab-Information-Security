@@ -379,11 +379,11 @@ lemma auth_to_terminal_offline:
 // -[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>),
 // //       Honest($Issuer), Honest(~PAN) ]->
 
-lemma auth_to_terminal_offline:
-"All terminal pan card issuer transaction #i.
-	Commit(terminal, pan, <'Card', 'Terminal', transaction>) @i
-	==> (Ex #j. Running(pan, terminal, <'Card', 'Terminal', transaction>) @j & Running(pan, issuer, <'Card', 'Issuer', transaction>) @j ) 
-      | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
+// lemma auth_to_terminal_offline:
+// "All terminal pan card issuer transaction #i.
+// 	Commit(terminal, pan, <'Card', 'Terminal', transaction>) @i
+// 	==> (Ex #j. Running(pan, terminal, <'Card', 'Terminal', transaction>) @j & Running(pan, issuer, <'Card', 'Issuer', transaction>) @j ) 
+//       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
 
 // ============== Online Authorization ============== //
 //TODO
