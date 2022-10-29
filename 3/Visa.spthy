@@ -250,6 +250,14 @@ lemma executable_online:
 
 //offline auth.--[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Honest($Issuer), Honest(~PAN) ]->
 // offline Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
+
+lemma auth_to_terminal_minimal: //non-injective agreement with one card session
+	"All T P r t #i.
+		Commit(T, P, <r, 'Terminal', t>)@i
+	 ==>
+		(Ex #j. Running(P, T, <r, 'Terminal', t>)@j) |
+		Ex A #k. Honest(A)@i & Compromise(A)@k"
+
 lemma auth_to_terminal_offline:
 "All issuer pan transaction #i.
   Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(issuer) @i & Honest(pan) @i
