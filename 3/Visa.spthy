@@ -71,7 +71,7 @@ rule Card_Responds_To_GPO_TC: //generate sk, fresh nc, receive get processing op
       !ATC(ATC),
       !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_)/*, Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)*/
+  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_)/*, Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>),*/
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -83,14 +83,14 @@ rule Card_Responds_To_GPO_ARQC: //generate sk, fresh nc, receive get processing 
       AC = MAC(sk, PDOL, ATC)
       AIP = 'fDDA'
       CID = 'ARQC'
-      //transaction = <~PAN, PDOL, ATC, AC>
+      transaction = <~PAN, PDOL, ATC, AC>
   in
     [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
       !IssuedBy(~PAN, $Issuer),
       !ATC(ATC),
       !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_)/*, Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)*/
+  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_), Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>),
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -118,7 +118,6 @@ rule Card_Responds_To_RR_TC: //last rule for card
   in
     [Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL), In('READ_RECORD')]
   --[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
-  //--/*[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]-*/>
     [Card_RESPONDED_To_RR_TC(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
 
 
@@ -126,29 +125,29 @@ rule Card_Responds_To_RR_TC: //last rule for card
 rule Card_Responds_To_RR_ARQC: //last rule for card
   let sm = <snd(PDOL), fst(PDOL), ~nc, ATC, AIP>
       SDAD = sign(sm, ~privkCard)
-      transaction = <~PAN, PDOL, ATC, AC>
+      //transaction = <~PAN, PDOL, ATC, AC>
   in
     [Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'ARQC', PDOL), In('READ_RECORD')]
-  --[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
-  //--/*[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]-*/>
+  -->
+  //--[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
     [Card_RESPONDED_To_RR_ARQC(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'ARQC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
 
 // =========== Offline Data Authentication ============ //
 
 //offline
-rule Terminal_Data_Authentication_TC: //last interaction with card
+rule Terminal_Receives_RR_TC: //last interaction with card
   let sm = <snd(PDOL), fst(PDOL), ~nc, ATC, AIP> in
     [Terminal_SENT_RR($Terminal, PDOL, <AIP, 'TC', ATC, AC>), In(<~PAN, SDAD, ~nc>), !Pk(~PAN, pkC_), In(pkC)]
   --[Eq(verify(SDAD, sm, pkC), true), Eq(pkC, pkC_)/*, Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)*/]->
     [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'TC', ATC, AC)]
 
 //online
-rule Terminal_Data_Authentication_ARQC: //last interaction with card
+rule Terminal_Receives_RR_ARQC: //last interaction with card
   let sm = <snd(PDOL), fst(PDOL), ~nc, ATC, AIP> 
-      transaction = <~PAN, PDOL, ATC, AC>
+      //transaction = <~PAN, PDOL, ATC, AC>
   in
     [Terminal_SENT_RR($Terminal, PDOL, <AIP, 'ARQC', ATC, AC>), In(<~PAN, SDAD, ~nc>), !Pk(~PAN, pkC_), In(pkC)]
-  --[Eq(verify(SDAD, sm, pkC), true), Eq(pkC, pkC_), Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
+  --[Eq(verify(SDAD, sm, pkC), true), Eq(pkC, pkC_)/*, Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)*/]->
     [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC)]
 
 
@@ -167,15 +166,15 @@ rule Terminal_Receives_TC:
 //Terminal sents
 rule Terminal_Sends_AC:
   let transaction = <~PAN, PDOL, ATC, AC> in
-    [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC), Fr(~channelID)]
+    [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC), !IssuedBy(~PAN, $Issuer), Fr(~channelID)]
   --[Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
-    [Send($Terminal, $Issuer, <~channelID, '1'>, transaction), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)]
+    [Send($Terminal, $Issuer, <~channelID, '1'>, transaction), Terminal_SENT_AC($Terminal, $Issuer, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)]
 
 //Terminal receives and commits
 rule Terminal_Receives_AC_and_Commits: //last rule for terminal
   let transaction = <~PAN, PDOL, ATC, AC> in
-    [Recv($Issuer, $Terminal, <~channelID, '2'>, <'ACCEPTED', ARPC>), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
-  --[Online(), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
+    [Recv($Issuer, $Terminal, <~channelID, '2'>, <'ACCEPTED', ARPC>), Terminal_SENT_AC($Terminal, $Issuer, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
+  --[Honest(~PAN), Honest($Terminal), Honest($Issuer), Online(), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
     [Terminal_Commits($Terminal, $Issuer, <'ACCEPTED', ARPC>, ~channelID)]
 
 
