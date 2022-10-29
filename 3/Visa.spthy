@@ -399,7 +399,7 @@ lemma auth_to_terminal_offline:
 
 lemma auth_to_terminal_online:
 "All terminal issuer pan transaction #i.
-	(Commit(terminal, pan, <'Card', 'Terminal', transaction>) & Commit(terminal, issuer, <'Issuer', 'Terminal', transaction>))@i
+	(Commit(terminal, pan, <'Card', 'Terminal', transaction>) & Commit(terminal, issuer, <'Issuer', 'Terminal', transaction>)) @i
 	==> (Ex #j. Running(terminal, issuer, <'Issuer', 'Terminal', transaction>) @j ) 
       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
 
