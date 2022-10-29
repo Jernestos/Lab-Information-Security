@@ -176,7 +176,7 @@ rule Card_Responds_To_GPO_TC: //generate sk, fresh nc, receive get processing op
       !ATC(ATC),
       !SharedKey(~PAN_, ~mk), !LtkCard(~PAN__, ~privkCard), !Pk(~PAN___, pk(~privkCard_)), Fr(~nc)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~PAN, ~PAN_), Eq(~PAN_, ~PAN__), Eq(~PAN__, ~PAN___), Eq(~privkCard, ~privkCard_), /*Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>*/)
+  --[ Once(<~PAN, ATC, 'Card'>), Eq(~PAN, ~PAN_), Eq(~PAN_, ~PAN__), Eq(~PAN__, ~PAN___), Eq(~privkCard, ~privkCard_)/*,Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Bank', transaction>)*/
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ~ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC)
