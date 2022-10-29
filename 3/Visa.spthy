@@ -252,7 +252,7 @@ lemma executable_online:
 // offline Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
 lemma auth_to_terminal_offline:
 "All issuer pan transaction #i.
-  Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(issuer) @i & Honest(pan)
+  Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(issuer) @i & Honest(pan) @i
   ==> (Ex #j. Running(pan, issuer, <'Card', 'Issuer', transaction>) @j)
       | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
 
