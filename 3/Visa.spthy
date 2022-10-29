@@ -352,8 +352,8 @@ lemma executable_online:
 
 lemma auth_to_terminal_offline:
 "All terminal pan card transaction #i.
-	Commit(terminal, pan, <card, 'Terminal', transaction>) @i & Honest($Issuer) @i & Honest(~PAN) @i
-	 ==> (Ex #j. Running(pan, terminal, <card, 'Terminal', transaction>) @j) 
+	Commit(terminal, pan, <card, 'Terminal', transaction>) @i & Honest(pan) @i
+	==> (Ex #j. Running(pan, terminal, <card, 'Terminal', transaction>) @j) 
       | Ex C #r. Honest(C) @i & Compromise(C) @r"
 
 
