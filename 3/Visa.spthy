@@ -248,33 +248,17 @@ lemma executable_online:
 //   ==> (Ex #j. Running(b,a,t) @j)
 //       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
 
-
-// //offline
-// rule Card_Responds_To_RR_TC: //last rule for card
-//   let sm = <snd(PDOL), fst(PDOL), ~nc, ATC, AIP> 
-//       SDAD = sign(sm, ~privkCard)
-//       transaction = <~PAN, PDOL, ATC, AC>
-//   in
-//     [Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL), In('READ_RECORD')]
-//   --[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
-//   //--/*[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]-*/>
-//     [Card_RESPONDED_To_RR_TC(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
-
-
-// // ============== Offline Authorization ============== //
-// rule Terminal_Receives_TC:
-//     let transaction = <~PAN, PDOL, ATC, AC> in
-//     [ Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'TC', ATC, AC),
-//       !IssuedBy(~PAN, $Issuer) ]
-//   --[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>),
-//       Honest($Issuer), Honest(~PAN) ]->
-//     [ ]
-
 lemma auth_to_terminal_offline:
 "All issuer pan transaction #i.
 	Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(pan) @i & Honest(issuer) @i
 	==> (Ex #j. Running(pan, 'Terminal', <'Card', 'Terminal', transaction>) @j & Running(pan, issuer, <'Card', 'Issuer', transaction>) @j) 
-      | Ex C #r. Compromise(C) @i & Honest(C) @r"
+      | Ex C #r. Honest(C) @i & Compromise(C) @r"
+
+// lemma auth_to_issuer:
+// "All B P r transaction #i.
+// 	Commit(B, P, <r, 'Bank', t>)@i
+// 	==> (Ex #j. Running(P, B, <r, 'Issuer', transaction>) @j) 
+//       | Ex C #k. Honest(C) @i & Compromise(C) @k"
 
 
 // //offline
