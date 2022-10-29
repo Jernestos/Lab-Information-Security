@@ -273,7 +273,7 @@ rule Terminal_Sends_AC:
 
 //Terminal receives and commits
 rule Terminal_Receives_AC_and_Commits: //last rule for terminal
-  let transaction = <~PAN, PDOL, ATC, AC>
+  let transaction = <~PAN, PDOL, ATC, AC> in
     [Recv($Issuer, $Terminal, <channelID, '2'>, transaction), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, SDAD, nc, pkC, <~PAN, PDOL, ATC, AC>)] //special order for recv
   --[Online(), Honest($Terminal), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
     [Terminal_Commits($Terminal, $Issuer, transaction, channelID, ARPC)]
