@@ -29,7 +29,7 @@ rule Create_Card:
   -->
     [ !SharedKey(~PAN, ~mk),
       //annotate the issuing bank
-      !IssuedBy(~PAN, $Issuer), SecretPAN(~PAN), SecretMK(~mk),
+      !IssuedBy(~PAN, $Issuer), SecretPAN(~PAN), SecretMK(~mk), SecretPrivkCard(~privkCard),
       //PKI
       !LtkCard(~PAN, ~privkCard),
       !Pk(~PAN, pk(~privkCard)),
@@ -379,5 +379,12 @@ lemma secrecy_PAN:
 "All PAN #i.
 	SecretPAN(PAN)@i
 	==> not (Ex #j. !KU(PAN)@j) | Ex A #k. Honest(A)@i & Compromise(A)@k"
+
+
+lemma secrecy_privkCard:
+	"All privkCard #i.
+		SecretPrivkCard(privkCard)@i
+	 ==>
+		not (Ex #j. !KU(privkCard)@j) | Ex A #k. Honest(A)@i & Compromise(A)@k"
 
 end
