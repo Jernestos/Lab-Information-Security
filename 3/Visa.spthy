@@ -343,7 +343,114 @@ lemma executable_online:
 //all by terminal offline accepted transactions are auth. to it by card
 //all by terminal online accepted transactions are auth. to it by card and issuer
 //all by issuer         accepted transactions are auth. to it by card and terminal
+lemma noninjective_agreement:
+"All a b t #i.
+  Commit(a,b,t) @i
+  ==> (Ex #j. Running(b,a,t) @j)
+      | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
 
+
+// //offline
+// rule Card_Responds_To_RR_TC: //last rule for card
+//   let sm = <snd(PDOL), fst(PDOL), ~nc, ATC, AIP> 
+//       SDAD = sign(sm, ~privkCard)
+//       transaction = <~PAN, PDOL, ATC, AC>
+//   in
+//     [Card_RESPONDED_To_GPO(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL), In('READ_RECORD')]
+//   --[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
+//     [Card_RESPONDED_To_RR_TC(~PAN, ~mk, $Issuer, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
+// ============== Offline Authorization ============== //
+// rule Terminal_Receives_TC:
+//     let transaction = <~PAN, PDOL, ATC, AC> in
+//     [ Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'TC', ATC, AC),
+//       !IssuedBy(~PAN, $Issuer) ]
+//   --[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>),
+//       Honest($Issuer), Honest(~PAN) ]->
+//     [ ]
+
+//   --[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
+// -[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>),
+// //       Honest($Issuer), Honest(~PAN) ]->
+
+// lemma auth_to_terminal_offline:
+// "All terminal pan card issuer transaction #i.
+// 	Commit(terminal, pan, <'Card', 'Terminal', transaction>) @i
+// 	==> (Ex #j. (Running(pan, terminal, <'Card', 'Terminal', transaction>) & Running(pan, issuer, <'Card', 'Issuer', transaction>)) @j ) 
+//       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i")
+
+// ============== Online Authorization ============== //
+//TODO
+//Terminal sents
+// rule Terminal_Sends_AC:
+//   let transaction = <~PAN, PDOL, ATC, AC> in
+//     [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC), Fr(~channelID)]
+//   --[Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
+//     [Send($Terminal, $Issuer, <~channelID, '1'>, transaction), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)]
+
+// //Terminal receives and commits
+// rule Terminal_Receives_AC_and_Commits: //last rule for terminal
+//   let transaction = <~PAN, PDOL, ATC, AC> in
+//     [Recv($Issuer, $Terminal, <channelID_, '2'>, <'ACCEPTED', ARPC>), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
+//   --[Online(), Honest($Terminal), Eq(channelID_, ~channelID), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
+//     [Terminal_Commits($Terminal, $Issuer, <'ACCEPTED', ARPC>, channelID_, ARPC)]
+
+//Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)
+//Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)
+
+lemma auth_to_terminal_online:
+"All terminal issuer pan transaction #i.
+	(Commit(terminal, pan, <'Card', 'Terminal', transaction>) & Commit(terminal, issuer, <'Issuer', 'Terminal', transaction>))@i
+	==> (Ex #j. Running(terminal, issuer, <'Issuer', 'Terminal', transaction>) @j ) 
+      | (Ex C #r. Reveal(C) @ r & Honest(C) @ i")
+
+
+
+
+// ================== Issuer =================== //
+// rule Issuer_Receives_AC:
+//     let AC = MAC(f(~mk, ATC), PDOL, ATC)
+//         ARPC = MACprime(f(~mk, ATC), AC)
+//         transaction = <~PAN, PDOL, ATC, AC>
+//     in
+//     [ Recv($Terminal, $Issuer, <channelID, '1'>, transaction),
+//       !SharedKey(~PAN, ~mk),
+//       !IssuedBy(~PAN, $Issuer) ]
+//   --[ Once(<~PAN, ATC, 'Issuer'>), //used in the restriction 'once'
+//       Running($Issuer, $Terminal, <'Issuer', 'Terminal', transaction>) ]->
+//     [ Issuer_Commits($Issuer, $Terminal, transaction, channelID, ARPC) ]
+
+// rule Issuer_Commits:
+//     let transaction = <~PAN, PDOL, ATC, AC> in
+//     [ Issuer_Commits($Issuer, $Terminal, transaction, channelID, ARPC) ]
+//   --[ Commit($Issuer, ~PAN, <'Card', 'Issuer', transaction>),
+//       Commit($Issuer, $Terminal, <'Terminal', 'Issuer', transaction>),
+//       Honest($Issuer), Honest(~PAN) ]->
+//     [ Send($Issuer, $Terminal, <channelID, '2'>, <'ACCEPTED', ARPC>) ]
+
+//[Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)]->
+
+// ============== Online Authorization ============== //
+//TODO
+//Terminal sents
+// rule Terminal_Sends_AC:
+//   let transaction = <~PAN, PDOL, ATC, AC> in
+//     [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC), Fr(~channelID)]
+//   --[Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
+//     [Send($Terminal, $Issuer, <~channelID, '1'>, transaction), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)]
+
+// //Terminal receives and commits
+// rule Terminal_Receives_AC_and_Commits: //last rule for terminal
+//   let transaction = <~PAN, PDOL, ATC, AC> in
+//     [Recv($Issuer, $Terminal, <channelID_, '2'>, <'ACCEPTED', ARPC>), Terminal_SENT_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
+//   --[Online(), Honest($Terminal), Eq(channelID_, ~channelID), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
+//     [Terminal_Commits($Terminal, $Issuer, <'ACCEPTED', ARPC>, channelID_, ARPC)]
+
+
+// lemma auth_to_issuer:
+// "All issuer terminal pan card transaction #i.
+// 	(Commit(issuer, pan, <card, 'Issuer', transaction>) & Commit(issuer, terminal, <'Terminal', 'Issuer', transaction>))@i
+// 	==> (Ex #j. Running(pan, issuer, <card, 'Issuer', transaction>)@j)
+//       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i")
   
 
 /////////////////////////////////////////////////////
