@@ -267,7 +267,6 @@ lemma auth_to_terminal: //injective agreement
 
 lemma auth_to_bank_minimal: //non-injective agreement with one card session
 	"All B P r t #i.
-		(All #a #b. OneCard()@a & OneCard()@b ==> #a = #b) &
 		Commit(B, P, <r, 'Bank', t>)@i
 	 ==>
 		(Ex #j. Running(P, B, <r, 'Bank', t>)@j) |
