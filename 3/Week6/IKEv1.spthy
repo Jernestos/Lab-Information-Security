@@ -77,7 +77,7 @@ rule Init_2:
       HASH_B_Check = prf(<skID, gy, gxI, $B, $A>)
       kI = prf(<skID, gy^~xI>)
   in //In(<aenc($B, pk(kA)), aenc(dec_enc_NR, pk(kA)), gy, HASH_B>)
-  [Init_1(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB>), In(fst_ele, snd_ele, gy, HASH_B>)]
+  [Init_1(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB>), In(<fst_ele, snd_ele, gy, HASH_B>)]
   --[Eq(HASH_B, HASH_B_Check), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI), Eq(dec_id_b, $B)]->
   [Init_2(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB, gy, dec_enc_NR>, skID, HASH_A, kI), Out(HASH_A)]
 
