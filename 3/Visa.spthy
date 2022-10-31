@@ -247,61 +247,150 @@ lemma executable_online:
 //   ==> (Ex #j. Running(b,a,t) @j)
 //       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
 
+lemma auth_to_terminal_offline:
+"All terminal pan transaction #i.
+  Commit(terminal, pan, <'Card', 'Terminal', transaction>) @i
+  ==> (Ex #j. Running(pan, terminal, <'Card', 'Terminal', transaction>) @j)
+      | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
+
+lemma auth_to_terminal_online:
+"All terminal issuer pan transaction #i.
+  Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Commit(terminal, issuer, <'Issuer', 'Terminal', transaction>) @i
+  ==> (Ex #j #k. Running(issuer, terminal, <'Issuer', 'Terminal', transaction>) @j & Running(pan, 'Terminal', <'Card', 'Terminal', transaction>) @k)
+      | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
+
+lemma auth_to_issuer:
+"All issuer terminal transaction #i.
+  Commit(issuer, terminal, <'Terminal', 'Issuer', transaction>) @i
+  ==> (Ex #j. Running(terminal, issuer, <'Terminal', 'Issuer', transaction>) @j)
+      | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// lemma auth_to_terminal_minimal: //non-injective agreement with one card session
+// 	"All T P r t #i.
+// 		Commit(T, P, <r, 'Terminal', t>)@i
+// 	 ==>
+// 		(Ex #j. Running(P, T, <r, 'Terminal', t>)@j) |
+// 		Ex A #k. Honest(A)@i & Compromise(A)@k"
 
 //offline auth.--[ Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Honest($Issuer), Honest(~PAN) ]->
 // offline Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
 
-lemma auth_to_terminal_minimal: //non-injective agreement with one card session
-	"All T P r t #i.
-		Commit(T, P, <r, 'Terminal', t>)@i
-	 ==>
-		(Ex #j. Running(P, T, <r, 'Terminal', t>)@j) |
-		Ex A #k. Honest(A)@i & Compromise(A)@k"
+// lemma auth_to_terminal_minimal: //non-injective agreement with one card session
+// 	"All T P r t #i.
+// 		Commit(T, P, <r, 'Terminal', t>)@i
+// 	 ==>
+// 		(Ex #j. Running(P, T, <r, 'Terminal', t>)@j) |
+// 		Ex A #k. Honest(A)@i & Compromise(A)@k"
 
-lemma auth_to_terminal_offline:
-"All issuer pan transaction #i.
-  Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(issuer) @i & Honest(pan) @i
-  ==> (Ex #j. Running(pan, issuer, <'Card', 'Issuer', transaction>) @j)
-      | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
+// lemma auth_to_terminal_offline:
+// "All issuer pan transaction #i.
+//   Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(issuer) @i & Honest(pan) @i
+//   ==> (Ex #j. Running(pan, issuer, <'Card', 'Issuer', transaction>) @j)
+//       | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
 
-lemma auth_to_terminal: //injective agreement
-	"All T P r t #i.
-		Commit(T, P, <r, 'Terminal', t>)@i
-	 ==>
-		((Ex #j. Running(P, T, <r, 'Terminal', t>)@j & j < i) &
-			not (Ex T2 P2 #i2. Commit(T2, P2, <r, 'Terminal', t>)@i2 & not(#i2 = #i))
-		) |
-		Ex A #k. Honest(A)@i & Compromise(A)@k"
 
-lemma auth_to_bank_minimal: //non-injective agreement with one card session
-	"All B P r t #i.
-		Commit(B, P, <r, 'Bank', t>)@i
-	 ==>
-		(Ex #j. Running(P, B, <r, 'Bank', t>)@j) |
-		Ex A #k. Honest(A)@i & Compromise(A)@k"
+//online Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
+// ============== Online Authorization ============== //
+//TODO
+//Terminal sents
+// rule Terminal_Sends_AC:
+//   let transaction = <~PAN, PDOL, ATC, AC> in
+//     [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC), !IssuedBy(~PAN, $Issuer), Fr(~channelID)]
+//   --[Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
+//     [Send($Terminal, $Issuer, <~channelID, '1'>, transaction), Terminal_SENT_AC($Terminal, $Issuer, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)]
 
-lemma auth_to_bank: //injective agreement
-	"All B P r t #i.
-		Commit(B, P, <r, 'Bank', t>)@i
-	 ==>
-		((Ex #j. Running(P, B, <r, 'Bank', t>)@j & j < i) &
-			not (Ex B2 P2 #i2. Commit(B2, P2, <r, 'Bank', t>)@i2 & not(#i2 = #i))
-		) |
-		Ex A #k. Honest(A)@i & Compromise(A)@k"
+// //Terminal receives and commits
+// rule Terminal_Receives_AC_and_Commits: //last rule for terminal
+//   let transaction = <~PAN, PDOL, ATC, AC> in
+//     [Recv($Issuer, $Terminal, <~channelID, '2'>, <'ACCEPTED', ARPC>), Terminal_SENT_AC($Terminal, $Issuer, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
+//   --[Honest(~PAN), Honest($Terminal), Honest($Issuer), Online(), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
+//     [Terminal_Commits($Terminal, $Issuer, <'ACCEPTED', ARPC>, ~channelID)]
+// lemma auth_to_terminal_online:
+// "All T P r t #i.
+// 	Commit(T, P, <r, 'Terminal', t>) @i
+// 	==> (Ex #j. Running(P, T, <r, 'Terminal', t>)@j) 
+//       | Ex A #k. Honest(A)@i & Compromise(A)@k"
 
-lemma auth_to_terminal_minimal__:
-  "All T P r t #i.
-    Commit(T, P, <r, 'Terminal', t>)@i
-   ==>
-    (Ex #j. Running(P, T, <r, 'Terminal', t>)@j) |
-    Ex A #k. Honest(A)@i & Compromise(A)@k"
 
-lemma auth_to_bank_minimal__:
-  "All B P r t #i.
-    Commit(B, P, <r, 'Bank', t>)@i
-   ==>
-    (Ex #j. Running(P, B, <r, 'Bank', t>)@j) |
-    Ex A #k. Honest(A)@i & Compromise(A)@k"
+// // ================== Issuer =================== //
+// rule Issuer_Receives_AC:
+//     let AC = MAC(f(~mk, ATC), PDOL, ATC)
+//         ARPC = MACprime(f(~mk, ATC), AC)
+//         transaction = <~PAN, PDOL, ATC, AC>
+//     in
+//     [ Recv($Terminal, $Issuer, <channelID, '1'>, transaction),
+//       !SharedKey(~PAN, ~mk),
+//       !IssuedBy(~PAN, $Issuer) ]
+//   --[ Once(<~PAN, ATC, 'Issuer'>), //used in the restriction 'once'
+//       Running($Issuer, $Terminal, <'Issuer', 'Terminal', transaction>) ]->
+//     [ Issuer_Commits($Issuer, $Terminal, transaction, channelID, ARPC) ]
+
+// rule Issuer_Commits:
+//     let transaction = <~PAN, PDOL, ATC, AC> in //last rule for issuer
+//     [ Issuer_Commits($Issuer, $Terminal, transaction, channelID, ARPC) ]
+//   --[ Commit($Issuer, ~PAN, <'Card', 'Issuer', transaction>),
+//       Commit($Issuer, $Terminal, <'Terminal', 'Issuer', transaction>),
+//       Honest($Issuer), Honest(~PAN) ]->
+//     [ Send($Issuer, $Terminal, <channelID, '2'>, <'ACCEPTED', ARPC>) ]
+
+// ============== Online Authorization ============== //
+//TODO
+//Terminal sents
+// rule Terminal_Sends_AC:
+//   let transaction = <~PAN, PDOL, ATC, AC> in
+//     [Terminal_Ready_To_Send_AC($Terminal, ~PAN, PDOL, 'ARQC', ATC, AC), !IssuedBy(~PAN, $Issuer), Fr(~channelID)]
+//   --[Running($Terminal, $Issuer, <'Terminal', 'Issuer', transaction>)]->
+//     [Send($Terminal, $Issuer, <~channelID, '1'>, transaction), Terminal_SENT_AC($Terminal, $Issuer, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)]
+
+// //Terminal receives and commits
+// rule Terminal_Receives_AC_and_Commits: //last rule for terminal
+//   let transaction = <~PAN, PDOL, ATC, AC> in
+//     [Recv($Issuer, $Terminal, <~channelID, '2'>, <'ACCEPTED', ARPC>), Terminal_SENT_AC($Terminal, $Issuer, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
+//   --[Honest(~PAN), Honest($Terminal), Honest($Issuer), Online(), Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
+//     [Terminal_Commits($Terminal, $Issuer, <'ACCEPTED', ARPC>, ~channelID)]
+
+// lemma auth_to_bank_minimal: //non-injective agreement with one card session
+// 	"All issuer P r transaction #i.
+// 		Commit(issuer, P, <r, 'Issuer', transaction>)@i
+// 	 ==>
+// 		(Ex #j. Running(P, issuer, <r, 'Issuer', transaction>)@j) |
+// 		Ex A #k. Honest(A)@i & Compromise(A)@k"
+
+// lemma auth_to_terminal_minimal__:
+//   "All T P r t #i.
+//     Commit(T, P, <r, 'Terminal', t>)@i
+//    ==>
+//     (Ex #j. Running(P, T, <r, 'Terminal', t>)@j) |
+//     Ex A #k. Honest(A)@i & Compromise(A)@k"
+
+// lemma auth_to_bank_minimal__:
+//   "All B P r t #i.
+//     Commit(B, P, <r, 'Bank', t>)@i
+//    ==>
+//     (Ex #j. Running(P, B, <r, 'Bank', t>)@j) |
+//     Ex A #k. Honest(A)@i & Compromise(A)@k"
   
 
 /////////////////////////////////////////////////////
