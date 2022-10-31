@@ -62,8 +62,8 @@ rule Resp_1:
       HASH_B = prf(<skID, gyR, gx, $B, $A>)
       quartet = <enc_id_B, enc_NR_B, gyR, HASH_B>
       kR = prf(<skID, gx^~yR>)
-  in /*In(triplet)*/
-  [In(aenc(<aenc($A, pk(kB)), aenc(dec_NI, pk(kB)), gx>, pk(kB))), !Pk($A, pkA), !Key($B, kB), Fr(~yR), Fr(~NR)]
+  in //In(<aenc($A, pk(kB)), aenc(dec_NI, pk(kB)), gx>)
+  [In(<aenc($A, pk(kB)), aenc(dec_NI, pk(kB)), gx>), !Pk($A, pkA), !Key($B, kB), Fr(~yR), Fr(~NR)]
   --[RunningR($B, $A, kR)]->
   [Resp_1(<$B, kB, ~yR, gyR, ~NR>, <$A, pkA, gx, dec_NI>, skID, HASH_B, kR), Out(quartet)]
 
@@ -72,7 +72,7 @@ rule Init_2:
       HASH_A = prf(<skID, gxI, gy, $A, $B>)
       HASH_B_Check = prf(<skID, gy, gxI, $B, $A>)
       kI = prf(<skID, gy^~xI>)
-  in 
+  in
   [Init_1(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB>), In(aenc(<aenc($B, pk(kA)), aenc(dec_enc_NR, pk(kA)), gy, HASH_B>, pk(kA)))]
   --[Eq(HASH_B, HASH_B_Check), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
   [Init_2(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB, gy, dec_enc_NR>, skID, HASH_A, kI), Out(HASH_A)]
