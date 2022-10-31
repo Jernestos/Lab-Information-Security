@@ -56,6 +56,8 @@ rule Init_1:
 
 rule Resp_1:
   let gyR = 'g'^~yR
+      dec_id_a = adec(fst_ele, kB)
+      dec_NI = adec(snd_ele, kB)
       enc_id_B = aenc($B, pkA)
       enc_NR_B = aenc(~NR, pkA)
       skID = prf(<h(<dec_NI, ~NR>), $A, $B>)
@@ -63,18 +65,20 @@ rule Resp_1:
       quartet = <enc_id_B, enc_NR_B, gyR, HASH_B>
       kR = prf(<skID, gx^~yR>)
   in //In(<aenc($A, pk(kB)), aenc(dec_NI, pk(kB)), gx>)
-  [In(<aenc($A, pk(kB)), aenc(dec_NI, pk(kB)), gx>), !Pk($A, pkA), !Key($B, kB), Fr(~yR), Fr(~NR)]
-  --[RunningR($B, $A, kR)]->
+  [In(<fst_ele, snd_ele, gx>), !Pk($A, pkA), !Key($B, kB), Fr(~yR), Fr(~NR)]
+  --[RunningR($B, $A, kR), Eq(dec_id_a, $A)]->
   [Resp_1(<$B, kB, ~yR, gyR, ~NR>, <$A, pkA, gx, dec_NI>, skID, HASH_B, kR), Out(quartet)]
 
 rule Init_2:
-  let skID = prf(<h(<~NI, dec_enc_NR>), $A, $B>)
+  let dec_id_b = adec(fst_ele, kA)
+      dec_enc_NR = adec(snd_ele, kA)
+      skID = prf(<h(<~NI, dec_enc_NR>), $A, $B>)
       HASH_A = prf(<skID, gxI, gy, $A, $B>)
       HASH_B_Check = prf(<skID, gy, gxI, $B, $A>)
       kI = prf(<skID, gy^~xI>)
   in //In(<aenc($B, pk(kA)), aenc(dec_enc_NR, pk(kA)), gy, HASH_B>)
-  [Init_1(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB>), In(<aenc($B, pk(kA)), aenc(dec_enc_NR, pk(kA)), gy, HASH_B>)]
-  --[Eq(HASH_B, HASH_B_Check), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
+  [Init_1(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB>), In(fst_ele, snd_ele, gy, HASH_B>)]
+  --[Eq(HASH_B, HASH_B_Check), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI), Eq(dec_id_b, $B)]->
   [Init_2(<$A, kA, ~xI, gxI, ~NI>, <$B, pkB, gy, dec_enc_NR>, skID, HASH_A, kI), Out(HASH_A)]
 
 rule Resp_2:
