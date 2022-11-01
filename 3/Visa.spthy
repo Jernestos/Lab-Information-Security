@@ -260,9 +260,9 @@ lemma auth_to_terminal_online:
       | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
 
 lemma auth_to_issuer:
-"All issuer terminal transaction #i.
-  Commit(issuer, terminal, <'Terminal', 'Issuer', transaction>) @i
-  ==> (Ex #j. Running(terminal, issuer, <'Terminal', 'Issuer', transaction>) @j)
+"All issuer terminal pan transaction #i.
+  Commit(issuer, terminal, <'Terminal', 'Issuer', transaction>) @i & Commit(issuer, pan, <'Card', 'Issuer', transaction>) @i
+  ==> (Ex #j #k. Running(terminal, issuer, <'Terminal', 'Issuer', transaction>) @j & Running(pan, issuer, <'Card', 'Issuer', transaction> @k)
       | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
 
 
