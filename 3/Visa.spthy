@@ -262,94 +262,11 @@ lemma auth_to_terminal_online:
 lemma auth_to_issuer:
 "All issuer terminal pan transaction #i.
   Commit(issuer, terminal, <'Terminal', 'Issuer', transaction>) @i & Commit(issuer, pan, <'Card', 'Issuer', transaction>) @i
-  ==> (Ex #j #k. Running(terminal, issuer, <'Terminal', 'Issuer', transaction>) @j & Running(pan, issuer, <'Card', 'Issuer', transaction>) @k)
+  ==> (Ex #j. Running(terminal, issuer, <'Terminal', 'Issuer', transaction>) @j) & (Ex #k. Running(pan, issuer, <'Card', 'Issuer', transaction>) @k)
       | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// lemma auth_to_terminal_minimal: //non-injective agreement with one card session
-// 	"All T P r t #i.
-// 		Commit(T, P, <r, 'Terminal', t>)@i
-// 	 ==>
-// 		(Ex #j. Running(P, T, <r, 'Terminal', t>)@j) |
-// 		Ex A #k. Honest(A)@i & Compromise(A)@k"
-
-// lemma auth_to_terminal_minimal: //non-injective agreement with one card session
-// 	"All T P r t #i.
-// 		Commit(T, P, <r, 'Terminal', t>)@i
-// 	 ==>
-// 		(Ex #j. Running(P, T, <r, 'Terminal', t>)@j) |
-// 		Ex A #k. Honest(A)@i & Compromise(A)@k"
-
-// lemma auth_to_terminal_offline:
-// "All issuer pan transaction #i.
-//   Commit('Terminal', pan, <'Card', 'Terminal', transaction>) @i & Honest(issuer) @i & Honest(pan) @i
-//   ==> (Ex #j. Running(pan, issuer, <'Card', 'Issuer', transaction>) @j)
-//       | (Ex C #r. Compromise(C) @ r & Honest(C) @ i)"
-
-// lemma auth_to_bank_minimal: //non-injective agreement with one card session
-// 	"All issuer P r transaction #i.
-// 		Commit(issuer, P, <r, 'Issuer', transaction>)@i
-// 	 ==>
-// 		(Ex #j. Running(P, issuer, <r, 'Issuer', transaction>)@j) |
-// 		Ex A #k. Honest(A)@i & Compromise(A)@k"
-
-// lemma auth_to_terminal_minimal__:
-//   "All T P r t #i.
-//     Commit(T, P, <r, 'Terminal', t>)@i
-//    ==>
-//     (Ex #j. Running(P, T, <r, 'Terminal', t>)@j) |
-//     Ex A #k. Honest(A)@i & Compromise(A)@k"
-
-// lemma auth_to_bank_minimal__:
-//   "All B P r t #i.
-//     Commit(B, P, <r, 'Bank', t>)@i
-//    ==>
-//     (Ex #j. Running(P, B, <r, 'Bank', t>)@j) |
-//     Ex A #k. Honest(A)@i & Compromise(A)@k"
   
-
 /////////////////////////////////////////////////////
 //           Security Properties                   //
 /////////////////////////////////////////////////////
-
-/*
-lemma secrecy_MK:
-"All MK #i.
-	SecretMK(MK)@i
-	==> not (Ex #j. !KU(MK)@j) | Ex A #k. Honest(A)@i & Compromise(A)@k"
-
-lemma secrecy_PAN:
-"All PAN #i.
-	SecretPAN(PAN)@i
-	==> not (Ex #j. !KU(PAN)@j) | Ex A #k. Honest(A)@i & Compromise(A)@k"
-
-
-lemma secrecy_privkCard:
-	"All privkCard #i.
-		SecretPrivkCard(privkCard)@i
-	 ==>
-		not (Ex #j. !KU(privkCard)@j) | Ex A #k. Honest(A)@i & Compromise(A)@k"
-*/
 
 end
