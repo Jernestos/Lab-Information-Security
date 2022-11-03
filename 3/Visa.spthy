@@ -71,9 +71,9 @@ rule Card_Responds_To_GPO_TC: //generate sk, fresh nc, receive get processing op
       !ATC(ATC),
       !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_), 
-      Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
-      Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
+  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_)//, 
+      // Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
+      // Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -93,9 +93,9 @@ rule Card_Responds_To_GPO_ARQC: //generate sk, fresh nc, receive get processing 
       !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
   --[ Once(<~PAN, ATC, 'Card'>), 
-      Eq(~privkCard, ~privkCard_), 
-      Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
-      Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
+      Eq(~privkCard, ~privkCard_)//, 
+      // Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
+      // Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -184,7 +184,7 @@ rule Terminal_Sends_AC:
 rule Terminal_Receives_AC_and_Commits: //last rule for terminal
   let transaction = <~PAN, PDOL, ATC, AC> in
     [Recv($Issuer, $Terminal, <~channelID, '2'>, <'ACCEPTED', ARPC>), Terminal_SENT_AC($Terminal, $Issuer, ~PAN, PDOL, 'ARQC', ATC, AC, <~PAN, PDOL, ATC, AC, ~channelID>)] //special order for recv
-  --[ Honest(~PAN), /*Honest($Terminal),*/ Honest($Issuer), Online(), 
+  --[ Honest(~PAN), Honest($Terminal), Honest($Issuer), Online(), 
       Commit('Terminal', ~PAN, <'Card', 'Terminal', transaction>), 
       Commit($Terminal, $Issuer, <'Issuer', 'Terminal', transaction>)]->
     [Terminal_Commits($Terminal, $Issuer, <'ACCEPTED', ARPC>, ~channelID)]
