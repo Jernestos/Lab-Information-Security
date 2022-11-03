@@ -71,9 +71,9 @@ rule Card_Responds_To_GPO_TC: //generate sk, fresh nc, receive get processing op
       !ATC(ATC),
       !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_), 
-      Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
-      Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
+  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_)//, 
+      // Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
+      // Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -93,9 +93,9 @@ rule Card_Responds_To_GPO_ARQC: //generate sk, fresh nc, receive get processing 
       !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
     ]
   --[ Once(<~PAN, ATC, 'Card'>), 
-      Eq(~privkCard, ~privkCard_), 
-      Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
-      Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
+      Eq(~privkCard, ~privkCard_)//, 
+      // Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
+      // Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
