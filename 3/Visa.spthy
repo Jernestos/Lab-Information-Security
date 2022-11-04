@@ -29,7 +29,7 @@ rule Create_Card:
   -->
     [ !SharedKey(~PAN, ~mk),
       //annotate the issuing bank
-      !IssuedBy(~PAN, $Issuer), //SecretPAN(~PAN), SecretMK(~mk), SecretPrivkCard(~privkCard),
+      !IssuedBy(~PAN, $Issuer),
       //PKI
       !LtkCard(~PAN, ~privkCard),
       !Pk(~PAN, pk(~privkCard)),
@@ -50,7 +50,7 @@ rule Compromise_Shared_Key:
     [ Out(~mk) ]
 
 // =========== Get Processing Options ============ //
-rule Terminal_Sends_GPO:
+rule Terminal_Sends_GPO: //checked
     let PDOL = <$amount, ~un>
     in
     [ Fr(~un) ]
@@ -58,44 +58,40 @@ rule Terminal_Sends_GPO:
     [ Out(<'GET_PROCESSING_OPTIONS', PDOL>),
       Terminal_Sent_GPO($Terminal, PDOL) ]
 
+rule Init_Card: //checked
+  let sk = f(~mk, ATC) in
+  [!IssuedBy(~PAN, $Issuer),
+  !ATC(ATC),
+  !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
+  ]  
+  --[Eq(~privkCard, ~privkCard_)]->
+  [Card_Inited(~PAN, $Issuer, ATC, ~mk, ~privkCard, ~nc, sk)]
+
 //offline
-rule Card_Responds_To_GPO_TC: //generate sk, fresh nc, receive get processing opttions, compute ac, and send back aip, cid, ...
-  let sk = f(~mk, ATC)
-      AC = MAC(sk, PDOL, ATC)
+rule Card_Responds_To_GPO_TC: //checked
+  let AC = MAC(sk, PDOL, ATC)
       AIP = 'fDDA'
       CID = 'TC'
       transaction = <~PAN, PDOL, ATC, AC>
   in
-    [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
-      !IssuedBy(~PAN, $Issuer),
-      !ATC(ATC),
-      !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
+    [ In(<'GET_PROCESSING_OPTIONS', PDOL>), Card_Inited(~PAN, $Issuer, ATC, ~mk, ~privkCard, ~nc, sk)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), Eq(~privkCard, ~privkCard_)//, 
-      // Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
-      // Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
+  --[ Once(<~PAN, ATC, 'Card'>)
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
     ] 
 
 //online
-rule Card_Responds_To_GPO_ARQC: //generate sk, fresh nc, receive get processing opttions, compute ac, and send back aip, cid, ...
-  let sk = f(~mk, ATC)
-      AC = MAC(sk, PDOL, ATC)
+rule Card_Responds_To_GPO_ARQC: //checked
+  let AC = MAC(sk, PDOL, ATC)
       AIP = 'fDDA'
       CID = 'ARQC'
       transaction = <~PAN, PDOL, ATC, AC>
   in
-    [ In(<'GET_PROCESSING_OPTIONS', PDOL>),
-      !IssuedBy(~PAN, $Issuer),
-      !ATC(ATC),
-      !SharedKey(~PAN, ~mk), !LtkCard(~PAN, ~privkCard), !Pk(~PAN, pk(~privkCard_)), Fr(~nc)
+    [ In(<'GET_PROCESSING_OPTIONS', PDOL>), Card_Inited(~PAN, $Issuer, ATC, ~mk, ~privkCard, ~nc, sk)
     ]
-  --[ Once(<~PAN, ATC, 'Card'>), 
-      Eq(~privkCard, ~privkCard_)//, 
-      // Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
-      // Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
+  --[ Once(<~PAN, ATC, 'Card'>)
     ]->
     [
       Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
@@ -104,13 +100,13 @@ rule Card_Responds_To_GPO_ARQC: //generate sk, fresh nc, receive get processing 
 // ============== Read Records ==================== //
 
 //offline
-rule Terminal_Sends_RR_TC:
-    [Terminal_Sent_GPO($Terminal, PDOL), In(<AIP, 'TC', ATC, AC>)]
+rule Terminal_Sends_RR_TC: //checked
+    [Terminal_Sent_GPO($Terminal, PDOL), In(<AIP, 'TC', ATC, AC>)] //checked
   -->
     [Terminal_SENT_RR($Terminal, PDOL, <AIP, 'TC', ATC, AC>), Out('READ_RECORD')]
 
 //online
-rule Terminal_Sends_RR_ARQC:
+rule Terminal_Sends_RR_ARQC: //checked
     [Terminal_Sent_GPO($Terminal, PDOL), In(<AIP, 'ARQC', ATC, AC>)]
   -->
     [Terminal_SENT_RR($Terminal, PDOL, <AIP, 'ARQC', ATC, AC>), Out('READ_RECORD')]
@@ -259,7 +255,7 @@ lemma executable_online:
 //   ==> (Ex #j. Running(b,a,t) @j)
 //       | (Ex C #r. Reveal(C) @ r & Honest(C) @ i)"
 
-lemma auth_to_terminal_offline:
+lemma auth_to_terminal_offline: //checked
 "All terminal pan transaction #i.
   Commit(terminal, pan, <'Card', 'Terminal', transaction>) @i
   ==> (Ex #j. Running(pan, terminal, <'Card', 'Terminal', transaction>) @j)

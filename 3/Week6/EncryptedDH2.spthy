@@ -83,7 +83,7 @@ rule Resp_2:
    //     dec_hash_gy = snd(dec_tuple)
    // in /*In(enc_tuple)*/
    [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), In(aenc(<$A, dec_hash_gy>, pk(kB)))]
-   --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR($A, $B, kR), CommitR($B, $A, kR)]->
+   --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR($B, $A, kR), CommitR($B, $A, kR)]->
    [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR)]
 
 
