@@ -79,7 +79,7 @@ rule Card_Responds_To_GPO_TC: //checked
   --[ Once(<~PAN, ATC, 'Card'>)
     ]->
     [
-      Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
+      Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), $Issuer, ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
     ] 
 
 //online
@@ -94,7 +94,7 @@ rule Card_Responds_To_GPO_ARQC: //checked
   --[ Once(<~PAN, ATC, 'Card'>)
     ]->
     [
-      Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
+      Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), $Issuer, ATC, ~nc, sk, AC, AIP, CID, PDOL), Out(<AIP, CID, ATC, AC>)
     ] 
 
 // ============== Read Records ==================== //
@@ -117,11 +117,11 @@ rule Card_Responds_To_RR_TC: //last rule for card
       SDAD = sign(sm, ~privkCard)
       transaction = <~PAN, PDOL, ATC, AC>
   in
-    [Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL), In('READ_RECORD')]
+    [Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), $Issuer, ATC, ~nc, sk, AC, AIP, 'TC', PDOL), In('READ_RECORD')]
   --[ Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
       Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
     ]->
-    [Card_RESPONDED_To_RR_TC(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'TC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
+    [Card_RESPONDED_To_RR_TC(~PAN, ~mk, ~privkCard, pk(~privkCard), $Issuer, ATC, ~nc, sk, AC, AIP, 'TC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
 
 
 //online
@@ -130,12 +130,12 @@ rule Card_Responds_To_RR_ARQC: //last rule for card
       SDAD = sign(sm, ~privkCard)
       transaction = <~PAN, PDOL, ATC, AC>
   in
-    [Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'ARQC', PDOL), In('READ_RECORD')]
+    [Card_RESPONDED_To_GPO(~PAN, ~mk, ~privkCard, pk(~privkCard), $Issuer, ATC, ~nc, sk, AC, AIP, 'ARQC', PDOL), In('READ_RECORD')]
   //-->
   --[ Running(~PAN, 'Terminal', <'Card', 'Terminal', transaction>), 
       Running(~PAN, $Issuer, <'Card', 'Issuer', transaction>)
     ]->
-    [Card_RESPONDED_To_RR_ARQC(~PAN, ~mk, ~privkCard, pk(~privkCard), ATC, ~nc, sk, AC, AIP, 'ARQC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
+    [Card_RESPONDED_To_RR_ARQC(~PAN, ~mk, ~privkCard, pk(~privkCard), $Issuer, ATC, ~nc, sk, AC, AIP, 'ARQC', PDOL, sm, SDAD), Out(<~PAN, SDAD, ~nc>)]
 
 // =========== Offline Data Authentication ============ //
 
