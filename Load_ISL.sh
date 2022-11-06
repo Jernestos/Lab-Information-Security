@@ -65,6 +65,6 @@ echo "Sync exe6 - DONE"
 echo "Sync DONE"
 
 echo "EVAL START"
-results
+npx isl-tool@latest results
 echo "EVAL END"
 
