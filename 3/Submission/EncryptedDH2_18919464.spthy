@@ -1,0 +1,171 @@
+theory EncryptedDH2
+begin
+
+/* Signed Diffie-Hellman protocol, second attempt:
+   A -> B : A, aenc_B{A, g^x}  (x fresh)
+   B -> A : B, aenc_A{B, g^y, h(g^x)}  (y fresh)
+   A -> B : A, aenc_B{A, h(g^y)}  */
+
+
+/* ----------------- */
+/* Equational theory */
+/* ----------------- */
+
+
+/* Load the built-in Diffie-Hellman, asymmetric encryption and hashing equational theories */
+builtins: diffie-hellman, asymmetric-encryption, hashing
+
+
+
+/* ------------------ */
+/* Key infrastructure */
+/* ------------------ */
+
+rule genkey: 
+   [ Fr(~kA) ] 
+   -->
+   [ !Key($A, ~kA),  
+     !Pk($A, pk(~kA)),
+     Out(pk(~kA)) ]
+
+
+/* Question 6*/
+
+/*----------------*/
+/* Protocol rules */
+/*----------------*/
+
+
+rule Init_1:
+   let gxI = 'g'^~xI
+       tuple = <$A, gxI>
+       enc_tuple = aenc(tuple, pkB)
+   in  
+      [!Pk($B, pkB), !Key($A, kA), Fr(~xI)]
+      -->
+      [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), Out(enc_tuple)]
+
+
+rule Resp_1:
+   // let dec_tuple = adec(enc_tuple, kB)
+   //     dec_id_i = fst(dec_tuple)
+   //     dec_gx = snd(dec_tuple)
+   let gyR = 'g'^~yR
+       hash_dec_gx = h(dec_gx)
+       triplet = <$B, gyR, hash_dec_gx>
+       kR = dec_gx^~yR
+       enc_triplet = aenc(triplet, pkA)
+   in /*In(enc_tuple)*/
+      [In(aenc(<$A, dec_gx>, pk(kB))), !Pk($A, pkA), !Key($B, kB), Fr(~yR)]
+      --[RunningR($B, $A, kR)]->
+      [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), Out(enc_triplet)]
+
+
+rule Init_2:
+   // let dec_triplet = adec(enc_triplet, kA)
+   //     dec_id_r = fst(dec_triplet)
+   //     temp_tuple = snd(dec_triplet)
+   //     dec_gy = fst(temp_tuple)
+   //     dec_hash_gx = snd(temp_tuple)
+   let hash_dec_gy = h(dec_gy)
+       tuple = <$A, hash_dec_gy>
+       kI = dec_gy^~xI
+       enc_tuple = aenc(tuple, pkB)
+   in /*In(enc_triplet)*/
+      [Init_1(<$A, kA, ~xI, gxI>, <$B, pkB>), In(aenc(<$B, dec_gy, dec_hash_gx>, pk(kA)))]
+      --[Eq(dec_hash_gx, h(gxI)), FinishedI($A), SecretI($A, $B, kI), RunningI($A, $B, kI), CommitI($A, $B, kI)]->
+      [Init_2(<$A, kA, ~xI, gxI>, <$B, pkB>, dec_gy, kI), Out(enc_tuple)]
+
+
+rule Resp_2:
+   // let dec_tuple = adec(enc_tuple, kB)
+   //     dec_id_i = fst(dec_tuple)
+   //     dec_hash_gy = snd(dec_tuple)
+   // in /*In(enc_tuple)*/
+   [Resp_1(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR), In(aenc(<$A, dec_hash_gy>, pk(kB)))]
+   --[Eq(dec_hash_gy, h(gyR)), FinishedR($B), SecretR($B, $A, kR), CommitR($B, $A, kR)]->
+   [Resp_2(<$B, kB, ~yR, gyR>, <$A, pkA>, dec_gx, kR)]
+
+
+/* ---------- */
+/* Key Reveal */
+/* ---------- */
+/* Omit this attack and the we have key secrecy established */
+rule q2_attack:
+   [!Key($X, k)]
+   --[Compromised($X)]->
+   [Out(k)]
+
+
+
+
+
+/* ---------- */
+/* Restrictions */
+/* ---------- */
+
+restriction equality:
+"All x y #i. Eq(x,y) @i ==> x = y"
+
+
+/* ---------- */
+/* Properties */
+/* ---------- */
+
+/* Executability checks */
+lemma executableI:
+exists-trace "Ex #i A. FinishedI(A) @ i & not (Ex #j B. Compromised(B)@j)"
+
+lemma executableR:
+exists-trace "Ex #i B. FinishedR(B) @ i & not (Ex #j B. Compromised(B)@j)"
+
+
+/* Secrecy and agreement properties */
+
+lemma key_secrecyI:
+"All #i A B k.
+ (SecretI(A, B, k) @ i &
+  not ((Ex #l. Compromised(A) @ l) | (Ex #m. Compromised(B) @ m)))
+  ==> not (Ex #j. K(k) @ j)"
+
+lemma key_secrecyR:
+"All #i A B k.
+ (SecretR(A, B, k) @ i &
+  not ((Ex #l. Compromised(A) @ l) | (Ex #m. Compromised(B) @ m)))
+  ==> not (Ex #j. K(k) @ j)"
+
+
+lemma agreementR:
+"All #i A B k.
+  (CommitR( B, A, k) @ i &
+   not ((Ex #l. Compromised(A) @ l) | (Ex #m. Compromised(B) @ m)))
+   ==> (Ex #j. RunningI(A, B, k) @ j & j < i)"
+
+lemma agreementI:
+"All #i A B k.
+  (CommitI( A, B, k) @ i &
+   not ((Ex #l. Compromised(A) @ l) | (Ex #m. Compromised(B) @ m)))
+   ==> (Ex #j. RunningR(B, A, k) @ j & j < i)"
+
+
+
+/* Perfect Forward Secrecy:  (Question 8)
+Please uncomment the following two lemmas for this question.
+*/
+
+lemma secrecy_PFS_R:
+ " All A B k #i. 
+    SecretR(A, B, k) @i &
+      not ((Ex #l. (Compromised(A) @ l & l<i )) | (Ex #m. (Compromised(B) @ m & m < i)) )  
+    ==> not (Ex #j. K(k)@j )"
+
+lemma secrecy_PFS_I:
+ " All A B k #i. 
+    SecretI(A, B, k) @i &
+      not ((Ex #l. (Compromised(A) @ l & l<i )) | (Ex #m. (Compromised(B) @ m & m < i)) )  
+    ==> not (Ex #j. K(k)@j )"
+
+end
+
+
+
