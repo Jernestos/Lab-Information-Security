@@ -7,6 +7,6 @@ This repository contains submissions for the Information Security Lab at ETHZ, a
 - Protocol modelling and analysis with Tamarin
 - Binary exploitation
 - SCION network attacks and defenses
-- Trust execution Environments
+- Trust Execution Environments
 - Security in Machine Learning
 
